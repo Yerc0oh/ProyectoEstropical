@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Comparar paquetes{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Comparar paquetes</h1>
+{% if paquetes %}
+<div class="table-responsive"><table class="table bg-white">
+  <thead><tr><th></th>{% for p in paquetes %}<th>{{ p.nombre }}</th>{% endfor %}</tr></thead>
+  <tbody>
+    <tr><th>Destino</th>{% for p in paquetes %}<td>{{ p.destino }}</td>{% endfor %}</tr>
+    <tr><th>Salida</th>{% for p in paquetes %}<td>{{ p.fecha_salida|date:"d/m/Y" }}</td>{% endfor %}</tr>
+    <tr><th>Duración</th>{% for p in paquetes %}<td>{{ p.duracion_dias }} días</td>{% endfor %}</tr>
+    <tr><th>Precio (Bs)</th>{% for p in paquetes %}<td>{{ p.precio_persona }}</td>{% endfor %}</tr>
+    <tr><th>Servicios</th>{% for p in paquetes %}<td>{% for ps in p.paqueteservicio_set.all %}{{ ps.servicio }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>{% endfor %}</tr>
+  </tbody></table></div>
+{% else %}<p class="text-muted">Selecciona al menos un paquete en el catálogo.</p>{% endif %}
+{% endblock %}

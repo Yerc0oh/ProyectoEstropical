@@ -1,0 +1,44 @@
+<nav class="navbar navbar-expand-lg navbar-dark navbar-est">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">Estropical</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menu">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="{% url 'destinations:catalogo' %}">Destinos</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'packages:catalogo' %}">Paquetes</a></li>
+        {% if es_admin %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Gestión</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'accounts:usuarios' %}">Usuarios</a></li>
+            <li><a class="dropdown-item" href="{% url 'destinations:gestion_lista' %}">Destinos</a></li>
+            <li><a class="dropdown-item" href="{% url 'packages:gestion_lista' %}">Paquetes</a></li>
+            <li><a class="dropdown-item" href="{% url 'suppliers:gestion_lista' %}">Proveedores</a></li>
+            <li><a class="dropdown-item" href="{% url 'hotels:gestion_lista' %}">Hoteles</a></li>
+            <li><a class="dropdown-item" href="{% url 'flights:gestion_lista' %}">Vuelos</a></li>
+            {% if user.is_superuser %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django admin</a></li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:perfil' %}">{{ user.first_name|default:user.username }}</a></li>
+        <li class="nav-item">
+          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
+            <button class="btn btn-link nav-link" type="submit">Cerrar sesión</button>
+          </form>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Ingresar</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:registro' %}">Registrarse</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

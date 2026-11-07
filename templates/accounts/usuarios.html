@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Gestionar usuarios</h1>
+<form class="mb-3" method="get"><div class="input-group"><input class="form-control" name="q" value="{{ q }}" placeholder="Buscar por correo"><button class="btn btn-primary">Buscar</button></div></form>
+<div class="card"><div class="table-responsive"><table class="table align-middle mb-0">
+<thead><tr><th>Correo</th><th>Nombre</th><th>Rol</th><th>Estado</th><th></th></tr></thead><tbody>
+{% for u in usuarios %}
+<tr>
+  <td>{{ u.email|default:u.username }}</td>
+  <td>{{ u.perfil.nombre_completo|default:u.get_full_name }}</td>
+  <td>
+    <form class="d-flex gap-1" method="post" action="{% url 'accounts:usuario_rol' u.pk %}">{% csrf_token %}
+      <select name="rol" class="form-select form-select-sm">
+        {% for r in roles %}<option value="{{ r }}" {% for g in u.groups.all %}{% if g.name == r %}selected{% endif %}{% endfor %}>{{ r }}</option>{% endfor %}
+      </select><button class="btn btn-sm btn-outline-primary">Asignar</button>
+    </form>
+  </td>
+  <td>{% if u.is_active %}<span class="badge text-bg-success">Activa</span>{% else %}<span class="badge text-bg-secondary">Bloqueada / sin verificar</span>{% endif %}</td>
+  <td class="text-end"><form method="post" action="{% url 'accounts:usuario_activo' u.pk %}">{% csrf_token %}
+    <button class="btn btn-sm btn-outline-danger">{% if u.is_active %}Bloquear{% else %}Activar{% endif %}</button></form></td>
+</tr>
+{% endfor %}</tbody></table></div></div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Paquetes{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Paquetes turísticos</h1>
+<form class="row g-2 mb-4" method="get">
+  <div class="col-md-3"><input class="form-control" name="q" value="{{ request.GET.q }}" placeholder="Buscar..."></div>
+  <div class="col-md-3"><select class="form-select" name="destino"><option value="">Todos los destinos</option>
+    {% for d in destinos %}<option value="{{ d.pk }}" {% if request.GET.destino == d.pk|stringformat:"s" %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><input class="form-control" type="number" name="precio_max" value="{{ request.GET.precio_max }}" placeholder="Precio máx. (Bs)"></div>
+  <div class="col-md-2"><input class="form-control" type="date" name="salida_desde" value="{{ request.GET.salida_desde }}"></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">Filtrar</button></div>
+</form>
+<form method="get" action="{% url 'packages:comparar' %}">
+<div class="row g-3">
+  {% for p in object_list %}
+  <div class="col-md-4"><div class="card h-100"><div class="card-body">
+    <h2 class="h5">{{ p.nombre }}</h2>
+    <p class="text-muted small mb-1">{{ p.destino }} · {{ p.fecha_salida|date:"d/m/Y" }} ({{ p.duracion_dias }} días)</p>
+    <p class="fw-bold mb-2">Bs {{ p.precio_persona }} <span class="fw-normal small">por persona</span></p>
+    <a href="{% url 'packages:detalle' p.pk %}">Ver detalle</a>
+    <div class="form-check mt-2"><input class="form-check-input" type="checkbox" name="ids" value="{{ p.pk }}" id="c{{ p.pk }}">
+      <label class="form-check-label small" for="c{{ p.pk }}">Comparar</label></div>
+  </div></div></div>
+  {% empty %}<p class="text-muted">No hay paquetes disponibles con esos filtros.</p>
+  {% endfor %}
+</div>
+<button class="btn btn-outline-primary mt-3">Comparar seleccionados (máx. 3)</button>
+</form>
+<div class="mt-3">{% include "partials/_pagination.html" %}</div>
+{% endblock %}

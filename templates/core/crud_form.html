@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ view.titulo }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-3">{{ view.titulo }}</h1>
+  <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <a class="btn btn-link" href="{% url view.url_listado %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

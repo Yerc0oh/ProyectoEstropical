@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="p-5 mb-4 bg-white rounded-3 border">
+  <h1 class="display-6">Tropical Tours</h1>
+  <p class="lead">Busca, reserva y paga tus viajes. <!-- TODO: contenido de portada --></p>
+  <a class="btn btn-primary" href="{% url 'packages:catalogo' %}">Ver paquetes</a>
+  <a class="btn btn-outline-primary" href="{% url 'destinations:catalogo' %}">Ver destinos</a>
+</div>
+{% endblock %}

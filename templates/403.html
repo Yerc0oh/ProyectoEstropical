@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Acceso denegado{% endblock %}
+{% block content %}
+<div class="text-center py-5"><h1>403</h1><p>No tienes permiso para ver esta página.</p>
+<a class="btn btn-primary" href="{% url 'core:home' %}">Volver al inicio</a></div>
+{% endblock %}

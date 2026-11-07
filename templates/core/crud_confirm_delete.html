@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Eliminar{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">¿Eliminar «{{ object }}»?</h1>
+  <p class="text-muted">El registro dejará de mostrarse, pero se conserva su historial.</p>
+  <form method="post">{% csrf_token %}
+    <button class="btn btn-danger" type="submit">Sí, eliminar</button>
+    <a class="btn btn-link" href="{% url view.url_listado %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

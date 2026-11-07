@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ destino.nombre }}{% endblock %}
+{% block content %}
+<h1 class="h2">{{ destino.nombre }}</h1>
+<p class="text-muted">{{ destino.pais }} · {{ destino.categoria }}</p>
+<div class="row g-2 mb-3">
+  {% for f in destino.fotos.all %}<div class="col-md-4"><img class="img-fluid rounded" src="{{ f.archivo.url }}" alt="{{ f.descripcion }}"></div>{% endfor %}
+</div>
+<p>{{ destino.descripcion|linebreaksbr }}</p>
+<!-- TODO: paquetes disponibles para este destino -->
+{% endblock %}

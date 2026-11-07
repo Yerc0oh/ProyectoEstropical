@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ paquete.nombre }}{% endblock %}
+{% block content %}
+<h1 class="h2">{{ paquete.nombre }}</h1>
+<p class="text-muted">{{ paquete.destino }} · {{ paquete.fecha_salida|date:"d/m/Y" }} al {{ paquete.fecha_retorno|date:"d/m/Y" }}</p>
+<p class="fs-4 fw-bold">Bs {{ paquete.precio_persona }} <span class="fs-6 fw-normal">por persona · {{ paquete.cupos_disponibles }} cupos</span></p>
+<p>{{ paquete.descripcion|linebreaksbr }}</p>
+<h2 class="h5">Servicios incluidos</h2>
+<ul>{% for ps in paquete.paqueteservicio_set.all %}<li>{{ ps.servicio }}{% if ps.detalle %} — {{ ps.detalle }}{% endif %}</li>{% empty %}<li class="text-muted">—</li>{% endfor %}</ul>
+<h2 class="h5">Itinerario</h2>
+<ul>{% for a in paquete.actividades.all %}<li>Día {{ a.dia }}: {{ a.titulo }}</li>{% empty %}<li class="text-muted">—</li>{% endfor %}</ul>
+<h2 class="h5">Condiciones</h2><p>{{ paquete.condiciones|linebreaksbr }}</p>
+<!-- TODO Sprint 3: botón "Reservar" (solo Cliente; sin cuenta -> pedir iniciar sesión) -->
+{% endblock %}

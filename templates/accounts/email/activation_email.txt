@@ -1,0 +1,7 @@
+Hola {{ user.first_name }},
+
+Para activar tu cuenta en Estropical abre este enlace (vence en 3 días):
+
+{{ enlace }}
+
+Si no creaste esta cuenta, ignora este mensaje.

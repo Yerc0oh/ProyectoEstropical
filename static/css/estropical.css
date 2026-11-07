@@ -1,0 +1,16 @@
+/* Paleta Estropical: azul y celeste pálido. TODO: refinar con el diseño final. */
+:root {
+  --est-azul: #0b5394;
+  --est-azul-oscuro: #073763;
+  --est-celeste: #e8f4fd;
+  --est-celeste-borde: #b9dcf5;
+  --bs-primary: var(--est-azul);
+  --bs-primary-rgb: 11, 83, 148;
+}
+body { background-color: var(--est-celeste); min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+.navbar-est { background-color: var(--est-azul); }
+.btn-primary { --bs-btn-bg: var(--est-azul); --bs-btn-border-color: var(--est-azul);
+  --bs-btn-hover-bg: var(--est-azul-oscuro); --bs-btn-hover-border-color: var(--est-azul-oscuro); }
+.card { border-color: var(--est-celeste-borde); }
+footer { background-color: var(--est-azul-oscuro); color: #fff; }
