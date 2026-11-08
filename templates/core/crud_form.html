@@ -3,6 +3,14 @@
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
   <h1 class="h4 mb-3">{{ view.titulo }}</h1>
+  {% if resumen_capacidad %}
+  <div class="alert alert-info small">
+    Capacidad total actual: <strong>{{ resumen_capacidad.total }}</strong> ·
+    ocupado: <strong>{{ resumen_capacidad.ocupado }}</strong> ·
+    disponible: <strong>{{ resumen_capacidad.disponible }}</strong>.
+    Al cambiar el total, la disponibilidad se recalcula conservando lo ocupado.
+  </div>
+  {% endif %}
   <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
     {% include "partials/_form.html" %}
     <button class="btn btn-primary" type="submit">Guardar</button>

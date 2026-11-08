@@ -60,6 +60,11 @@ class Paquete(models.Model):
     def duracion_dias(self):
         return (self.fecha_retorno - self.fecha_salida).days + 1
 
+    @property
+    def cupos_ocupados(self):
+        """Cupos ya comprometidos (CU-16): total - disponibles."""
+        return self.cupos_total - self.cupos_disponibles
+
     def save(self, *args, **kwargs):
         if self._state.adding and self.cupos_disponibles is None:
             self.cupos_disponibles = self.cupos_total

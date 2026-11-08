@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Tarifas de {{ tipo_habitacion.nombre }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'hotels:gestion_lista' %}">Hoteles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'hotels:gestion_habitaciones' hotel.pk %}">{{ hotel.nombre }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ tipo_habitacion.nombre }}</li>
+  </ol>
+</nav>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0">Tarifas por temporada</h1>
+    <p class="text-muted mb-0">Hotel: <strong>{{ hotel.nombre }}</strong> · Tipo de habitación: <strong>{{ tipo_habitacion.nombre }}</strong></p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'hotels:gestion_tarifa_crear' hotel.pk tipo_habitacion.pk %}">Nueva tarifa</a>
+</div>
+<div class="card"><div class="table-responsive">
+<table class="table table-hover mb-0">
+  <thead><tr>
+    <th>Hotel</th><th>Tipo de habitación</th><th>Desde</th><th>Hasta</th><th>Precio por noche (BOB)</th><th></th>
+  </tr></thead>
+  <tbody>
+  {% for tarifa in tarifas %}
+    <tr>
+      <td>{{ hotel.nombre }}</td>
+      <td>{{ tipo_habitacion.nombre }}</td>
+      <td>{{ tarifa.fecha_inicio|date:"d/m/Y" }}</td>
+      <td>{{ tarifa.fecha_fin|date:"d/m/Y" }}</td>
+      <td>{{ tarifa.precio_noche }}</td>
+      <td class="text-end">
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'hotels:gestion_tarifa_editar' hotel.pk tipo_habitacion.pk tarifa.pk %}">Editar</a>
+        <a class="btn btn-sm btn-outline-danger" href="{% url 'hotels:gestion_tarifa_eliminar' hotel.pk tipo_habitacion.pk tarifa.pk %}">Eliminar</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="text-center text-muted py-4">Este tipo de habitación aún no tiene tarifas.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+<div class="mt-3">
+  {% include "partials/_pagination.html" %}
+  <a class="btn btn-link" href="{% url 'hotels:gestion_habitaciones' hotel.pk %}">Volver a tipos de habitación</a>
+</div>
+{% endblock %}

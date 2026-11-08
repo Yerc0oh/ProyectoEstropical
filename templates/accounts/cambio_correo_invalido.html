@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Enlace no válido{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">No pudimos confirmar el cambio</h1>
+  <p>El enlace no es válido, ya fue utilizado o caducó. Tu correo actual no se modificó.</p>
+  <p class="text-muted">Si deseas cambiar tu correo, solicita un nuevo enlace desde tu perfil.</p>
+  <a class="btn btn-primary" href="{% url 'accounts:cambio_correo' %}">Solicitar otro enlace</a>
+  <a class="btn btn-link" href="{% url 'accounts:perfil' %}">Volver a mi perfil</a>
+</div></div></div></div>
+{% endblock %}

@@ -4,16 +4,21 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.views import PasswordChangeView
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_POST
 
 from apps.core.access import ROL_ADMIN, ROL_CLIENTE, admin_required, public
 
-from .forms import CambiarRolForm, PerfilForm, ReenviarActivacionForm, RegistroForm
-from .services import enviar_correo_activacion, obtener_perfil, registrar_cliente
+from .forms import (CambiarPasswordForm, CambiarRolForm, CambioCorreoForm, PerfilForm,
+                    ReenviarActivacionForm, RegistroForm)
+from .services import (confirmar_cambio_correo as aplicar_cambio_correo,
+                       enviar_correo_activacion, obtener_perfil, registrar_cliente,
+                       solicitar_cambio_correo as guardar_solicitud_correo)
 from .tokens import activation_token
 
 
@@ -83,8 +88,59 @@ def perfil(request):
     return render(request, "accounts/perfil.html", {
         "form": form,
         "email": request.user.email,
+        "correo_pendiente": obj.correo_pendiente,
         "perfil_provisional": obj.nro_documento == f"USR-{request.user.pk}",
     })
+
+
+# ------------------------------------------------------- CU-05 Cambiar correo
+@login_required
+def cambio_correo(request):
+    """Solicita un cambio de correo; no modifica la cuenta hasta confirmar."""
+    form = CambioCorreoForm(request.POST or None, usuario=request.user)
+    if request.method == "POST" and form.is_valid():
+        guardar_solicitud_correo(request.user, form.cleaned_data["email"])
+        return render(request, "accounts/cambio_correo_solicitado.html",
+                      {"nuevo_email": form.cleaned_data["email"]})
+    return render(request, "accounts/cambio_correo_form.html", {
+        "form": form,
+        "email": request.user.email,
+        "correo_pendiente": obtener_perfil(request.user).correo_pendiente,
+    })
+
+
+@login_required
+def confirmar_cambio_correo(request, uidb64, token):
+    """Confirma el cambio desde el enlace enviado al nuevo correo."""
+    try:
+        user = User.objects.get(pk=force_str(urlsafe_base64_decode(uidb64)))
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    # El enlace solo puede aplicarse a la cuenta que tiene la sesión iniciada.
+    if user is None or user.pk != request.user.pk:
+        return render(request, "accounts/cambio_correo_invalido.html", status=400)
+
+    if aplicar_cambio_correo(user, token):
+        messages.success(request,
+                         "Correo actualizado. A partir de ahora inicia sesión con el nuevo correo.")
+        return redirect("accounts:perfil")
+    return render(request, "accounts/cambio_correo_invalido.html", status=400)
+
+
+# ----------------------------------------------------- CU-05 Cambiar contraseña
+class CambiarPasswordView(PasswordChangeView):
+    """Vista nativa de Django: valida la contraseña actual, los validadores y
+    conserva la sesión con update_session_auth_hash()."""
+
+    template_name = "accounts/cambio_password_form.html"
+    form_class = CambiarPasswordForm
+    success_url = reverse_lazy("accounts:perfil")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Contraseña actualizada.")
+        return response
 
 
 # ------------------------------------------------------------------ CU-06 Gestionar usuarios

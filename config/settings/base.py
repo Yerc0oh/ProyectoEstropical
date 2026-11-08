@@ -86,6 +86,8 @@ SESSION_COOKIE_HTTPONLY = True              # JS no puede leer la cookie de sesi
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24 * 3   # enlaces de verificación/recuperación: 3 días
+# El cambio de correo usa su propia caducidad (configurable por variable de entorno).
+EMAIL_CHANGE_TIMEOUT = env.int("EMAIL_CHANGE_TIMEOUT", default=60 * 60 * 24)
 # TODO: limitar intentos fallidos de login (p. ej. django-axes) antes de producción.
 
 # ---------------------------------------------------------------- Correo
@@ -106,3 +108,6 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# CU-13: límite para documentos de proveedores (5 MB por defecto).
+DOCUMENTO_PROVEEDOR_MAX_BYTES = env.int(
+    "DOCUMENTO_PROVEEDOR_MAX_BYTES", default=5 * 1024 * 1024)

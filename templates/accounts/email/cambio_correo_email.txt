@@ -1,0 +1,9 @@
+Hola {{ user.first_name|default:user.username }},
+
+Recibimos una solicitud para cambiar el correo de tu cuenta de Estropical a {{ nuevo_email }}.
+
+Abre este enlace para confirmar el cambio:
+
+{{ enlace }}
+
+Si no solicitaste este cambio, ignora este mensaje: tu correo actual seguirá igual.

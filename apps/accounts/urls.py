@@ -33,6 +33,10 @@ urlpatterns = [
         template_name="accounts/password_reset_complete.html")), name="password_reset_complete"),
     # CU-05 Perfil
     path("perfil/", views.perfil, name="perfil"),
+    path("perfil/correo/", views.cambio_correo, name="cambio_correo"),
+    path("perfil/correo/confirmar/<uidb64>/<token>/", views.confirmar_cambio_correo,
+         name="confirmar_cambio_correo"),
+    path("perfil/contrasena/", views.CambiarPasswordView.as_view(), name="cambiar_password"),
     # CU-06 Gestionar usuarios (solo Administrador)
     path("gestion/usuarios/", views.usuarios, name="usuarios"),
     path("gestion/usuarios/<int:pk>/activo/", views.usuario_alternar_activo, name="usuario_activo"),

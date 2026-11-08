@@ -8,6 +8,11 @@
     <input id="correo-actual" class="form-control" type="email" value="{{ email }}" disabled>
     <div class="form-text">El correo no se puede cambiar desde esta pantalla.</div>
   </div>
+  {% if correo_pendiente %}
+  <div class="alert alert-info" role="alert">
+    Hay un cambio de correo pendiente de confirmación. Revisa la bandeja de entrada del nuevo correo.
+  </div>
+  {% endif %}
   {% if perfil_provisional %}
   <div class="alert alert-warning" role="alert">
     Este perfil se creó automáticamente con datos provisionales. Revisa y completa tu información personal.
@@ -17,5 +22,10 @@
     {% include "partials/_form.html" %}
     <button class="btn btn-primary" type="submit">Guardar</button>
   </form>
+  <hr>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'accounts:cambio_correo' %}">Cambiar correo</a>
+    <a class="btn btn-outline-secondary" href="{% url 'accounts:cambiar_password' %}">Cambiar contraseña</a>
+  </div>
 </div></div></div></div>
 {% endblock %}

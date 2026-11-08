@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Mis documentos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0">Mis documentos</h1>
+    <p class="text-muted mb-0">{{ proveedor.razon_social }} · NIT {{ proveedor.nit }}</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'suppliers:documento_cargar' %}">Cargar documento</a>
+</div>
+
+<div class="alert alert-info small">
+  Formatos permitidos: PDF, JPG y PNG. Tamaño máximo: 5 MB.
+  Cada nueva versión se conserva en el historial con su revisión anterior.
+</div>
+
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead><tr>
+    <th>Documento</th><th>Archivo</th><th>Cargado</th><th>Vence</th>
+    <th>Estado</th><th>Revisión</th><th></th>
+  </tr></thead>
+  <tbody>
+  {% for documento in documentos %}
+    <tr>
+      <td>{{ documento.tipo_documento }}</td>
+      <td>
+        <a href="{% url 'suppliers:documento_archivo' documento.pk %}">Descargar</a>
+      </td>
+      <td>{{ documento.fecha_carga|date:"d/m/Y H:i" }}</td>
+      <td>{{ documento.fecha_vencimiento|date:"d/m/Y"|default:"—" }}</td>
+      <td>
+        {% if documento.estado == "pendiente" %}
+        <span class="badge text-bg-warning">Pendiente</span>
+        {% elif documento.estado == "aprobado" %}
+        <span class="badge text-bg-success">Aprobado</span>
+        {% else %}
+        <span class="badge text-bg-danger">Rechazado</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if documento.revisado_por %}
+        {{ documento.revisado_por }}<br>
+        <span class="text-muted small">{{ documento.fecha_revision|date:"d/m/Y H:i" }}</span>
+        {% if documento.observacion %}
+        <div class="small text-muted">Observación: {{ documento.observacion }}</div>
+        {% endif %}
+        {% else %}
+        <span class="text-muted">—</span>
+        {% endif %}
+      </td>
+      <td class="text-end">
+        {% if documento.estado != "pendiente" %}
+        <a class="btn btn-sm btn-outline-primary"
+           href="{% url 'suppliers:documento_nueva_version' documento.pk %}">Nueva versión</a>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="text-center text-muted py-4">
+      Aún no has cargado documentos.
+    </td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

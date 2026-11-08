@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Editar tipo de habitación{% else %}Nuevo tipo de habitación{% endif %}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'hotels:gestion_lista' %}">Hoteles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'hotels:gestion_habitaciones' hotel.pk %}">{{ hotel.nombre }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% if object %}Editar{% else %}Nuevo{% endif %}</li>
+  </ol>
+</nav>
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-3">{% if object %}Editar tipo de habitación{% else %}Nuevo tipo de habitación{% endif %}</h1>
+  <p class="text-muted">Hotel: <strong>{{ hotel.nombre }}</strong></p>
+  {% if object %}
+  <div class="alert alert-info small">
+    Capacidad total actual: <strong>{{ object.habitaciones_total }}</strong> ·
+    ocupadas: <strong>{{ object.habitaciones_ocupadas }}</strong> ·
+    disponibles: <strong>{{ object.habitaciones_disponibles }}</strong>.
+    Al cambiar el total, la disponibilidad se recalcula conservando las
+    habitaciones ocupadas o comprometidas.
+  </div>
+  {% endif %}
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <a class="btn btn-link" href="{% url 'hotels:gestion_habitaciones' hotel.pk %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

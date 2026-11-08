@@ -7,12 +7,15 @@ from django.contrib.auth.models import Group, User
 from django.core import mail
 from django.core.cache import cache
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from apps.accounts.models import Perfil
 from apps.accounts.services import obtener_perfil, registrar_cliente
+from apps.accounts.tokens import email_change_token
 from apps.core.access import ROL_ADMIN, ROL_CLIENTE
 
 PUBLICAS = ["core:home", "destinations:catalogo", "packages:catalogo", "packages:comparar",
@@ -237,6 +240,217 @@ class PerfilTests(TestCase):
         self.assertEqual(self.perfil_cliente.nombres, "Ana")
         self.assertEqual(self.perfil_cliente.apellidos, "Lopez")
         self.assertEqual(self.perfil_cliente.nro_documento, "111111")
+
+
+class CambioCorreoTests(TestCase):
+    def setUp(self):
+        self.user = crear_usuario("actual@test.com", ROL_CLIENTE)
+        self.perfil = Perfil.objects.create(
+            usuario=self.user, nombres="Ana", apellidos="Lopez", nro_documento="900")
+        self.client.force_login(self.user)
+
+    def _solicitar(self, email):
+        # Los correos se envían con transaction.on_commit.
+        with self.captureOnCommitCallbacks(execute=True):
+            return self.client.post(reverse("accounts:cambio_correo"), {"email": email})
+
+    def _token(self):
+        self.user._state.fields_cache.pop("perfil", None)
+        return email_change_token.make_token(self.user)
+
+    def _confirmar(self, token):
+        uidb64 = urlsafe_base64_encode(force_bytes(self.user.pk))
+        return self.client.get(reverse("accounts:confirmar_cambio_correo",
+                                       kwargs={"uidb64": uidb64, "token": token}))
+
+    def test_anonimo_no_puede_solicitar_el_cambio(self):
+        self.client.logout()
+        r = self.client.post(reverse("accounts:cambio_correo"), {"email": "nuevo@test.com"})
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse("accounts:login"), r.url)
+        self.perfil.refresh_from_db()
+        self.assertIsNone(self.perfil.correo_pendiente)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_usuario_autenticado_puede_solicitar_el_cambio(self):
+        r = self._solicitar("Nuevo@Test.com")
+        self.assertEqual(r.status_code, 200)
+        self.perfil.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertEqual(self.perfil.correo_pendiente, "nuevo@test.com")
+        self.assertEqual(self.user.email, "actual@test.com")
+        self.assertEqual(self.user.username, "actual@test.com")
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_correo_de_otro_usuario_es_rechazado(self):
+        crear_usuario("ocupado@test.com", ROL_CLIENTE)
+        r = self._solicitar("OCUPADO@test.com")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "no está disponible")
+        self.assertIn("email", r.context["form"].errors)
+        self.perfil.refresh_from_db()
+        self.assertIsNone(self.perfil.correo_pendiente)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_correo_actual_no_genera_solicitud(self):
+        r = self._solicitar("ACTUAL@test.com")
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "ya es tu correo actual")
+        self.perfil.refresh_from_db()
+        self.assertIsNone(self.perfil.correo_pendiente)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_el_correo_original_se_mantiene_antes_de_confirmar(self):
+        self._solicitar("nuevo@test.com")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "actual@test.com")
+        self.assertEqual(self.user.username, "actual@test.com")
+        # El login con el correo actual sigue funcionando.
+        self.client.logout()
+        r = self.client.post(reverse("accounts:login"),
+                             {"username": "actual@test.com", "password": "Clave-segura-123"})
+        self.assertRedirects(r, reverse("core:home"))
+
+    def test_el_correo_de_verificacion_llega_al_nuevo_destinatario(self):
+        self._solicitar("nuevo@test.com")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["nuevo@test.com"])
+        self.assertIn("/cuentas/perfil/correo/confirmar/", mail.outbox[0].body)
+
+    def test_token_valido_actualiza_email_y_username(self):
+        self._solicitar("nuevo@test.com")
+        r = self._confirmar(self._token())
+        self.assertRedirects(r, reverse("accounts:perfil"))
+        self.user.refresh_from_db()
+        self.perfil.refresh_from_db()
+        self.assertEqual(self.user.email, "nuevo@test.com")
+        self.assertEqual(self.user.username, "nuevo@test.com")
+        self.assertIsNone(self.perfil.correo_pendiente)
+        self.assertEqual(self.perfil.correo_pendiente_nonce, "")
+
+    @override_settings(EMAIL_CHANGE_TIMEOUT=-1)
+    def test_token_caducado_es_rechazado(self):
+        self._solicitar("nuevo@test.com")
+        r = self._confirmar(self._token())
+        self.assertEqual(r.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "actual@test.com")
+        self.assertEqual(self.user.username, "actual@test.com")
+
+    def test_token_usado_por_segunda_vez_es_rechazado(self):
+        self._solicitar("nuevo@test.com")
+        token = self._token()
+        self.assertEqual(self._confirmar(token).status_code, 302)
+        r = self._confirmar(token)
+        self.assertEqual(r.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "nuevo@test.com")
+
+    def test_una_nueva_solicitud_invalida_el_token_anterior(self):
+        self._solicitar("primero@test.com")
+        token_anterior = self._token()
+        self._solicitar("segundo@test.com")
+        r = self._confirmar(token_anterior)
+        self.assertEqual(r.status_code, 400)
+        self.user.refresh_from_db()
+        self.perfil.refresh_from_db()
+        self.assertEqual(self.user.email, "actual@test.com")
+        self.assertEqual(self.perfil.correo_pendiente, "segundo@test.com")
+
+    def test_solicitud_invalida_no_modifica_la_cuenta(self):
+        r = self._solicitar("esto-no-es-un-correo")
+        self.assertEqual(r.status_code, 200)
+        self.user.refresh_from_db()
+        self.perfil.refresh_from_db()
+        self.assertEqual(self.user.email, "actual@test.com")
+        self.assertEqual(self.user.username, "actual@test.com")
+        self.assertIsNone(self.perfil.correo_pendiente)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_error_de_integridad_no_deja_email_y_username_inconsistentes(self):
+        self._solicitar("nuevo@test.com")
+        with patch.object(User, "save", side_effect=IntegrityError):
+            r = self._confirmar(self._token())
+        self.assertEqual(r.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, "actual@test.com")
+        self.assertEqual(self.user.username, "actual@test.com")
+
+
+class CambioPasswordTests(TestCase):
+    DATOS = {"old_password": "Clave-segura-123",
+             "new_password1": "Nueva-clave-456",
+             "new_password2": "Nueva-clave-456"}
+
+    def setUp(self):
+        self.user = crear_usuario("pass@test.com", ROL_CLIENTE)
+        self.client.force_login(self.user)
+
+    def _post(self, **cambios):
+        datos = {**self.DATOS, **cambios}
+        return self.client.post(reverse("accounts:cambiar_password"), datos)
+
+    def test_anonimo_no_puede_acceder(self):
+        self.client.logout()
+        r = self.client.get(reverse("accounts:cambiar_password"))
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse("accounts:login"), r.url)
+
+    def test_contrasena_actual_incorrecta_es_rechazada(self):
+        r = self._post(old_password="Incorrecta-123")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("old_password", r.context["form"].errors)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Clave-segura-123"))
+
+    def test_contrasenas_nuevas_diferentes_son_rechazadas(self):
+        r = self._post(new_password2="Otra-clave-789")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("new_password2", r.context["form"].errors)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Clave-segura-123"))
+
+    def test_contrasena_que_incumple_validadores_es_rechazada(self):
+        r = self._post(new_password1="12345678", new_password2="12345678")
+        self.assertEqual(r.status_code, 200)
+        errores = r.context["form"].errors
+        # PasswordChangeForm de Django asocia los validadores a new_password2.
+        self.assertTrue("new_password1" in errores or "new_password2" in errores)
+        self.assertContains(r, "demasiado común")
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Clave-segura-123"))
+
+    def test_contrasena_valida_se_guarda(self):
+        r = self._post()
+        self.assertRedirects(r, reverse("accounts:perfil"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Nueva-clave-456"))
+
+    def test_la_contrasena_anterior_deja_de_funcionar(self):
+        self._post()
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.check_password("Clave-segura-123"))
+
+    def test_la_contrasena_nueva_permite_iniciar_sesion(self):
+        self._post()
+        self.client.logout()
+        r = self.client.post(reverse("accounts:login"),
+                             {"username": "pass@test.com", "password": "Nueva-clave-456"})
+        self.assertRedirects(r, reverse("core:home"))
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_la_sesion_del_usuario_se_conserva(self):
+        r = self._post()
+        self.assertRedirects(r, reverse("accounts:perfil"))
+        self.assertEqual(self.client.get(reverse("accounts:perfil")).status_code, 200)
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_recuperacion_de_contrasena_sigue_funcionando(self):
+        self.client.logout()
+        r = self.client.post(reverse("accounts:password_reset"), {"email": "pass@test.com"})
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("/cuentas/recuperar/", mail.outbox[0].body)
 
 
 class LoginSuperuserTests(TestCase):

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Editar tarifa{% else %}Nueva tarifa{% endif %}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'hotels:gestion_lista' %}">Hoteles</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'hotels:gestion_habitaciones' hotel.pk %}">{{ hotel.nombre }}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'hotels:gestion_tarifas' hotel.pk tipo_habitacion.pk %}">{{ tipo_habitacion.nombre }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{% if object %}Editar{% else %}Nueva{% endif %}</li>
+  </ol>
+</nav>
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-3">{% if object %}Editar tarifa{% else %}Nueva tarifa{% endif %}</h1>
+  <p class="text-muted">Hotel: <strong>{{ hotel.nombre }}</strong> · Tipo de habitación: <strong>{{ tipo_habitacion.nombre }}</strong></p>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <a class="btn btn-link" href="{% url 'hotels:gestion_tarifas' hotel.pk tipo_habitacion.pk %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

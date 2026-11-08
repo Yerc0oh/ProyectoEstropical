@@ -14,6 +14,7 @@
     <tr>
       {% for titulo, attr in view.columnas %}<td>{{ obj|valor_de:attr }}</td>{% endfor %}
       <td class="text-end">
+        {% if view.url_extra %}<a class="btn btn-sm btn-outline-secondary" href="{% url view.url_extra obj.pk %}">{{ view.texto_extra }}</a>{% endif %}
         {% if view.url_editar %}<a class="btn btn-sm btn-outline-primary" href="{% url view.url_editar obj.pk %}">Editar</a>{% endif %}
         {% if view.url_eliminar %}<a class="btn btn-sm btn-outline-danger" href="{% url view.url_eliminar obj.pk %}">Eliminar</a>{% endif %}
       </td>

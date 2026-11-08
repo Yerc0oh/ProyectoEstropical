@@ -20,7 +20,7 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
 ## Commands
 
 - Run: `python manage.py runserver`
-- All tests: `python manage.py test` — 35 tests; they need a reachable PostgreSQL server
+- All tests: `python manage.py test` — 180 tests; they need a reachable PostgreSQL server
   (Django creates a test database, so the DB user needs `CREATEDB`).
 - One test: `python manage.py test apps.accounts.tests.AccesoPorRolTests.test_cliente_no_accede_a_gestion`
 - Config check: `python manage.py check`
@@ -38,7 +38,10 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
 - Every app defines an `app_name`; reverse with namespaces (`core:home`, `packages:catalogo`).
 - Logout is POST-only; tests assert GET returns 405.
 - URL layout: public catalogs `/destinos/`, `/paquetes/`; management `/gestion/...`;
-  accounts `/cuentas/...`.
+  accounts `/cuentas/...`; supplier portal `/proveedor/documentos/`.
+- Supplier documents are private: `Proveedor.usuario` links the owning account, and files
+  are only served through `suppliers:documento_archivo`. Never expose `media/proveedores/`
+  directly or add public views for those files.
 
 ## Architecture and conventions
 
@@ -58,6 +61,10 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
   Functions, triggers, and views are intentionally pending.
 - `Paquete` represents one concrete departure date; `cupos_disponibles` is independent of
   hotel-room and flight-seat inventory. Do not assume real reservation logic exists.
+- Capacity updates (`asientos_total`, `habitaciones_total`, `cupos_total`) must go through
+  `apps/core/disponibilidad.py`. The occupied amount is `total - disponible`; never reset
+  availability to the new total. There is no `Reserva` model yet, so that difference is the
+  only occupancy record.
 - Business logic belongs in each app's `services.py` (see `apps/accounts/services.py`);
   forms use `BootstrapFormMixin` / `BootstrapModelForm`; templates are under root `templates/`.
 
@@ -65,5 +72,5 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
 
 - Run `python manage.py check` and `python manage.py test`; after model changes run
   `makemigrations` and inspect the generated migration (some migrations contain seed data).
-- README lists pending features and the code has `TODO` markers (CU-08, CU-12–CU-17).
+- README lists pending features and the code has `TODO` markers (CU-08, CU-17).
   Do not mark those complete without implementing them.

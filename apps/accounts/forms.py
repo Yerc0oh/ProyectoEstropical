@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import Group, User
 from django.db.models import Q
 from django.utils import timezone
@@ -107,6 +107,46 @@ class PerfilForm(BootstrapModelForm):
         if getattr(self, "_documento_duplicado", False):
             exclude.update({"tipo_documento", "nro_documento"})
         return exclude
+
+
+class CambioCorreoForm(BootstrapFormMixin, forms.Form):
+    """Solicitud de cambio de correo. No modifica la cuenta por sí misma."""
+
+    # User.username (que también guarda el correo) admite 150 caracteres.
+    email = forms.EmailField(label="Nuevo correo electrónico", max_length=150)
+
+    def __init__(self, *args, usuario=None, **kwargs):
+        self.usuario = usuario
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        actual = (self.usuario.email or "").strip().lower()
+        if email == actual:
+            raise forms.ValidationError("Ese ya es tu correo actual.")
+        # No se revela a quién pertenece el correo, solo que no está disponible.
+        ocupado = (User.objects
+                   .filter(Q(email__iexact=email) | Q(username__iexact=email))
+                   .exclude(pk=self.usuario.pk).exists())
+        if ocupado:
+            raise forms.ValidationError("Ese correo no está disponible.")
+        return email
+
+
+class CambiarPasswordForm(BootstrapFormMixin, PasswordChangeForm):
+    """PasswordChangeForm nativo con el estilo Bootstrap del proyecto."""
+
+    old_password = forms.CharField(
+        label="Contraseña actual", strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password",
+                                          "autofocus": True}))
+    new_password1 = forms.CharField(
+        label="Nueva contraseña", strip=False,
+        help_text=password_validation.password_validators_help_text_html(),
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}))
+    new_password2 = forms.CharField(
+        label="Confirmar nueva contraseña", strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}))
 
 
 class CambiarRolForm(forms.Form):

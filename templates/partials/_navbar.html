@@ -8,6 +8,9 @@
       <ul class="navbar-nav me-auto">
         <li class="nav-item"><a class="nav-link" href="{% url 'destinations:catalogo' %}">Destinos</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'packages:catalogo' %}">Paquetes</a></li>
+        {% if proveedor_usuario %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'suppliers:mis_documentos' %}">Mis documentos</a></li>
+        {% endif %}
         {% if es_admin %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Gestión</a>
@@ -16,6 +19,7 @@
             <li><a class="dropdown-item" href="{% url 'destinations:gestion_lista' %}">Destinos</a></li>
             <li><a class="dropdown-item" href="{% url 'packages:gestion_lista' %}">Paquetes</a></li>
             <li><a class="dropdown-item" href="{% url 'suppliers:gestion_lista' %}">Proveedores</a></li>
+            <li><a class="dropdown-item" href="{% url 'suppliers:gestion_documentos' %}">Documentos de proveedores</a></li>
             <li><a class="dropdown-item" href="{% url 'hotels:gestion_lista' %}">Hoteles</a></li>
             <li><a class="dropdown-item" href="{% url 'flights:gestion_lista' %}">Vuelos</a></li>
             {% if user.is_superuser %}

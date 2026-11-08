@@ -1,0 +1,57 @@
+<div class="card mb-3" data-formset data-prefix="{{ formset.prefix }}">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>{{ titulo }}</span>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-form>Agregar</button>
+  </div>
+  <div class="card-body">
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}
+    <div class="alert alert-danger" role="alert">{{ formset.non_form_errors }}</div>
+    {% endif %}
+    <div data-forms>
+      {% for form in formset %}
+      <div class="border rounded p-2 mb-2" data-form>
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+        <div class="row g-2">
+          {% for field in form.visible_fields %}
+            {% if field.name != "DELETE" %}
+            <div class="col-md">
+              <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% if formset.can_delete %}
+        <div class="form-check mt-1">
+          {{ form.DELETE }}
+          <label class="form-check-label small" for="{{ form.DELETE.id_for_label }}">Eliminar</label>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <template data-empty-form>
+      <div class="border rounded p-2 mb-2" data-form>
+        {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+        <div class="row g-2">
+          {% for field in formset.empty_form.visible_fields %}
+            {% if field.name != "DELETE" %}
+            <div class="col-md">
+              <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% if formset.can_delete %}
+        <div class="form-check mt-1">
+          {{ formset.empty_form.DELETE }}
+          <label class="form-check-label small" for="{{ formset.empty_form.DELETE.id_for_label }}">Eliminar</label>
+        </div>
+        {% endif %}
+      </div>
+    </template>
+  </div>
+</div>

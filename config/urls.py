@@ -17,9 +17,11 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    # Fotos subidas, públicas en desarrollo (en producción las sirve el servidor web).
+    # Archivos públicos en desarrollo. Se excluye expresamente la carpeta de
+    # documentos de proveedores: esos archivos solo se sirven por la vista
+    # protegida suppliers:documento_archivo.
     urlpatterns += [
-        re_path(r"^media/(?P<path>.*)$", login_not_required(serve),
+        re_path(r"^media/(?!proveedores/)(?P<path>.*)$", login_not_required(serve),
                 {"document_root": settings.MEDIA_ROOT}),
     ]
 
