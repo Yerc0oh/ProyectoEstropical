@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Enlace inválido{% endblock %}
 {% block content %}
-<div class="text-center py-5"><h1 class="h3">Enlace inválido o vencido</h1>
-<p>Regístrate nuevamente o contacta a la agencia. <!-- TODO: reenviar correo de verificación --></p></div>
+<div class="text-center py-5">
+  <h1 class="h3">Enlace inválido o vencido</h1>
+  <p>Si tu enlace de verificación venció, puedes
+    <a href="{% url 'accounts:reenviar_activacion' %}">solicitar uno nuevo</a>.</p>
+  <p class="text-muted small">Si el problema continúa, contacta a la agencia.</p>
+</div>
 {% endblock %}

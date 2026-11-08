@@ -12,6 +12,7 @@ urlpatterns = [
     # CU-01 Registrarse (+ verificación de correo)
     path("registro/", views.registro, name="registro"),
     path("activar/<uidb64>/<token>/", views.activar, name="activar"),
+    path("reenviar-verificacion/", views.reenviar_activacion, name="reenviar_activacion"),
     # CU-02 / CU-04 Iniciar y cerrar sesión (el cierre es solo POST)
     path("ingresar/", public(auth_views.LoginView.as_view(
         template_name="accounts/login.html", authentication_form=LoginForm,

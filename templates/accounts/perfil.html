@@ -3,7 +3,16 @@
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
   <h1 class="h4">Mi perfil</h1>
-  <p class="text-muted">Correo: {{ email }}</p>
+  <div class="mb-3">
+    <label class="form-label" for="correo-actual">Correo actual</label>
+    <input id="correo-actual" class="form-control" type="email" value="{{ email }}" disabled>
+    <div class="form-text">El correo no se puede cambiar desde esta pantalla.</div>
+  </div>
+  {% if perfil_provisional %}
+  <div class="alert alert-warning" role="alert">
+    Este perfil se creó automáticamente con datos provisionales. Revisa y completa tu información personal.
+  </div>
+  {% endif %}
   <form method="post" novalidate>{% csrf_token %}
     {% include "partials/_form.html" %}
     <button class="btn btn-primary" type="submit">Guardar</button>

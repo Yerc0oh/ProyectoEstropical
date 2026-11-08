@@ -15,7 +15,7 @@ python manage.py createsuperuser                       # usar un correo como nom
 python manage.py runserver
 ```
 
-Pruebas: `python manage.py test` (17 pruebas de acceso por rol, registro, recuperación y gestión).
+Pruebas: `python manage.py test` (35 pruebas de acceso por rol, registro, recuperación, reenvío de verificación, perfil y gestión).
 
 ## Accesos y seguridad
 
@@ -65,5 +65,5 @@ Sprint 3 y 4 con migraciones `RunSQL`.
 - CU-14: gestión de tipos de habitación y tarifas por hotel.
 - CU-16: actualizar disponibilidad (habitaciones, asientos, cupos).
 - CU-17: confirmar servicios con proveedores (depende de reservas → Sprint 3).
-- Portada (`core/home.html`), diseño final, validar filtros del catálogo, reenvío del correo de verificación.
+- Portada (`core/home.html`), diseño final, validar filtros del catálogo.
 - Producción: SMTP real, `ALLOWED_HOSTS`, servir `/media/`, límite de intentos de login.

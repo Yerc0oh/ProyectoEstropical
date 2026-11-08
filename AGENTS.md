@@ -20,7 +20,7 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
 ## Commands
 
 - Run: `python manage.py runserver`
-- All tests: `python manage.py test` — 17 tests; they need a reachable PostgreSQL server
+- All tests: `python manage.py test` — 35 tests; they need a reachable PostgreSQL server
   (Django creates a test database, so the DB user needs `CREATEDB`).
 - One test: `python manage.py test apps.accounts.tests.AccesoPorRolTests.test_cliente_no_accede_a_gestion`
 - Config check: `python manage.py check`
