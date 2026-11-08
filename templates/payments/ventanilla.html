@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Pago en ventanilla{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Registrar pago en ventanilla</h1>
+<form class="mb-3" method="get"><div class="input-group"><input class="form-control" name="codigo" value="{{ codigo }}" placeholder="Código de reserva (ET-...)"><button class="btn btn-primary">Buscar</button></div></form>
+{% if reserva %}
+<div class="row g-3">
+  <div class="col-lg-5"><div class="card"><div class="card-body small">
+    <h2 class="h6">{{ reserva.codigo }} {% include "reservations/_estado.html" with estado=reserva.estado texto=reserva.get_estado_display %}</h2>
+    <p class="mb-1">{{ reserva.cliente.nombre_completo }} · {{ reserva.cliente.tipo_documento }} {{ reserva.cliente.nro_documento }}</p>
+    <p class="mb-1">{{ reserva.paquete.nombre }} · sale {{ reserva.paquete.fecha_salida|date:"d/m/Y" }}</p>
+    <p class="mb-1">Total Bs {{ reserva.total }} · <b>Saldo Bs {{ saldo }}</b></p>
+    {% if cuota %}<p class="mb-0 text-primary">Paga en cuotas: corresponde la cuota {{ cuota.numero }} de Bs {{ cuota.monto }}.</p>{% endif %}
+    <a href="{% url 'payments:estado_cuenta' reserva.pk %}">Ver estado de cuenta</a>
+  </div></div></div>
+  <div class="col-lg-7"><div class="card"><div class="card-body">
+    {% if saldo > 0 and reserva.esta_activa %}
+    <form method="post" action="?codigo={{ reserva.codigo|urlencode }}" novalidate>{% csrf_token %}
+      {% include "partials/_form.html" %}
+      <button class="btn btn-primary">Registrar pago y emitir comprobante</button>
+    </form>
+    {% else %}<p class="mb-0 text-muted">Esta reserva no admite pagos (sin saldo o no está activa).</p>{% endif %}
+  </div></div></div>
+</div>
+{% endif %}
+{% endblock %}

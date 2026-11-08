@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Cronograma {{ paquete.nombre }}{% endblock %}
+{% block content %}
+<h1 class="h3">Cronograma: {{ paquete.nombre }}</h1>
+<p class="text-muted">{{ paquete.fecha_salida|date:"d/m/Y" }} al {{ paquete.fecha_retorno|date:"d/m/Y" }} ({{ paquete.duracion_dias }} días)</p>
+<div class="row g-3">
+  <div class="col-lg-7"><div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+    <thead><tr><th>Día</th><th>Orden</th><th>Hora</th><th>Actividad</th><th></th></tr></thead><tbody>
+    {% for a in actividades %}
+    <tr><td>{{ a.dia }}</td><td>{{ a.orden }}</td><td>{{ a.hora_inicio|time:"H:i"|default:"-" }}</td>
+      <td>{{ a.titulo }}<div class="small text-muted">{{ a.descripcion }}</div></td>
+      <td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-primary" href="{% url 'reservations:cronograma_editar' paquete.pk a.pk %}">Editar</a>
+        <form class="d-inline" method="post" action="{% url 'reservations:cronograma_eliminar' paquete.pk a.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Quitar</button></form></td></tr>
+    {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">Aún no hay actividades.</td></tr>{% endfor %}
+  </tbody></table></div></div></div>
+  <div class="col-lg-5"><div class="card"><div class="card-body">
+    <h2 class="h6">{% if editando %}Editar actividad{% else %}Nueva actividad{% endif %}</h2>
+    <form method="post" novalidate>{% csrf_token %}
+      {% include "partials/_form.html" %}
+      <button class="btn btn-primary">Guardar</button>
+      {% if editando %}<a class="btn btn-link" href="{% url 'reservations:cronograma' paquete.pk %}">Cancelar</a>{% endif %}
+    </form>
+  </div></div></div>
+</div>
+<a class="btn btn-link mt-3 px-0" href="{% url 'reservations:cronograma_paquetes' %}">← Volver</a>
+{% endblock %}

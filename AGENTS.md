@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Django 5.2 monolith (PostgreSQL, server-rendered templates, Bootstrap 5). Academic project
-covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
+covering Sprints 1–4 (Sprint 3 = `apps/reservations`, Sprint 4 = `apps/payments`).
 
 ## Setup
 
@@ -20,7 +20,7 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
 ## Commands
 
 - Run: `python manage.py runserver`
-- All tests: `python manage.py test` — 17 tests; they need a reachable PostgreSQL server
+- All tests: `python manage.py test` — 44 tests; they need a reachable PostgreSQL server
   (Django creates a test database, so the DB user needs `CREATEDB`).
 - One test: `python manage.py test apps.accounts.tests.AccesoPorRolTests.test_cliente_no_accede_a_gestion`
 - Config check: `python manage.py check`
@@ -53,11 +53,15 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
 - Models and fields use Spanish snake_case. Every model sets an explicit singular `db_table`
   matching `docs/estropical_schema.sql` (BIGINT PK, amounts `NUMERIC(12,2)` in BOB, fixed
   states as `TextChoices` strings rather than lookup tables).
-- `docs/estropical_schema.sql` describes all 6 sprints, but only Sprints 1–2 tables are
-  implemented. Do not execute that SQL manually: it conflicts with Django migrations.
-  Functions, triggers, and views are intentionally pending.
-- `Paquete` represents one concrete departure date; `cupos_disponibles` is independent of
-  hotel-room and flight-seat inventory. Do not assume real reservation logic exists.
+- `docs/estropical_schema.sql` describes all 6 sprints; tables of Sprints 1–4 are implemented
+  (plus `promocion` and `parametro_sistema`, needed early). Do not execute that SQL manually.
+  The trigger `trg_reserva_cupos`, `fn_penalidad_cancelacion`, `fn_cerrar_caja` and the view
+  `v_saldo_reserva` are created by `RunSQL` migrations (reservations/0002, payments/0002).
+- Package seats and flight seats are adjusted ONLY by the trigger when a `Reserva` is created or
+  its `estado`/`cantidad_pasajeros` changes. Never decrement `cupos_disponibles` in Python.
+- `Reserva.subtotal/total` and `CierreCaja.saldo` are `GeneratedField`s: refresh the instance
+  after saving before reading them.
+- Online payments go through `payments.services.pasarela_simulada`; card data is never stored.
 - Business logic belongs in each app's `services.py` (see `apps/accounts/services.py`);
   forms use `BootstrapFormMixin` / `BootstrapModelForm`; templates are under root `templates/`.
 
@@ -65,5 +69,5 @@ covering Sprints 1–2 only; reservations/payments (Sprint 3+) do not exist yet.
 
 - Run `python manage.py check` and `python manage.py test`; after model changes run
   `makemigrations` and inspect the generated migration (some migrations contain seed data).
-- README lists pending features and the code has `TODO` markers (CU-08, CU-12–CU-17).
+- README lists pending features and the code has `TODO` markers (CU-08, CU-12–CU-16).
   Do not mark those complete without implementing them.

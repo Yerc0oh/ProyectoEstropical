@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Modificar {{ reserva.codigo }}{% endblock %}
+{% block content %}
+<h1 class="h3">Modificar reserva {{ reserva.codigo }}</h1>
+<p class="text-muted">Puedes corregir datos de pasajeros, quitar alguno o agregar uno (última fila). El precio se recalcula
+  según la cantidad. Si la reserva tiene un plan de cuotas no se puede cambiar la cantidad de pasajeros.</p>
+<form method="post" novalidate>{% csrf_token %}
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+  {% for f in formset %}
+  <div class="card mb-3"><div class="card-body">
+    <div class="d-flex justify-content-between">
+      <h2 class="h6">{% if f.instance.pk %}Pasajero {{ forloop.counter }}{% else %}Agregar pasajero (opcional){% endif %}</h2>
+      {% if f.instance.pk %}<div class="form-check">{{ f.DELETE }} <label class="form-check-label small text-danger" for="{{ f.DELETE.id_for_label }}">Quitar</label></div>{% endif %}
+    </div>
+    {% include "reservations/_pasajero_campos.html" with f=f %}
+  </div></div>
+  {% endfor %}
+  <div class="card mb-3"><div class="card-body">{% include "partials/_form.html" with form=form %}</div></div>
+  <button class="btn btn-primary">Guardar cambios</button>
+  <a class="btn btn-link" href="{% url 'reservations:detalle' reserva.pk %}">Volver</a>
+</form>
+{% endblock %}

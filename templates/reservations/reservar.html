@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Reservar {{ paquete.nombre }}{% endblock %}
+{% block content %}
+<h1 class="h3">Reservar: {{ paquete.nombre }}</h1>
+<p class="text-muted">{{ paquete.destino }} · {{ paquete.fecha_salida|date:"d/m/Y" }} al {{ paquete.fecha_retorno|date:"d/m/Y" }} ·
+  Bs {{ paquete.precio_persona }} por persona · {{ paquete.cupos_disponibles }} cupos libres</p>
+
+<form class="row g-2 align-items-end mb-3" method="get">
+  <div class="col-auto"><label class="form-label" for="n">Cantidad de pasajeros</label>
+    <input class="form-control" id="n" type="number" name="pasajeros" min="1" max="{{ max_pasajeros }}" value="{{ formset.total_form_count }}"></div>
+  <div class="col-auto"><button class="btn btn-outline-primary">Cambiar</button></div>
+</form>
+
+<form method="post" novalidate>{% csrf_token %}
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+  {% for f in formset %}
+  <div class="card mb-3"><div class="card-body">
+    <h2 class="h6">Pasajero {{ forloop.counter }}</h2>
+    {% include "reservations/_pasajero_campos.html" with f=f %}
+  </div></div>
+  {% endfor %}
+  <div class="card mb-3"><div class="card-body">
+    {% include "partials/_form.html" with form=form %}
+    <p class="mb-0 small text-muted">El total se calcula al confirmar (precio por persona × pasajeros − cupón).
+      La reserva queda <b>pendiente</b> y debe pagarse dentro del plazo indicado o expira y libera los cupos.</p>
+  </div></div>
+  <button class="btn btn-primary" type="submit">Confirmar reserva</button>
+  <a class="btn btn-link" href="{% url 'packages:detalle' paquete.pk %}">Volver</a>
+</form>
+{% endblock %}

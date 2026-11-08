@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Conciliación{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Conciliar pagos</h1>
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6">Comparar con el extracto del banco / pasarela</h2>
+  <form method="post" enctype="multipart/form-data" class="row g-2 align-items-end" novalidate>{% csrf_token %}
+    <div class="col-md-8">{% include "partials/_form.html" %}</div>
+    <div class="col-md-4 mb-3"><button class="btn btn-primary w-100">Conciliar</button></div>
+  </form>
+  {% if resultados %}
+  <table class="table table-sm mb-0"><thead><tr><th>Referencia</th><th class="text-end">Monto extracto</th><th class="text-end">Monto sistema</th><th>Resultado</th></tr></thead><tbody>
+  {% for r in resultados %}
+  <tr><td>{{ r.referencia }}</td><td class="text-end">{{ r.monto }}</td><td class="text-end">{{ r.pago.monto|default:"-" }}</td>
+    <td>{% if r.resultado == "conciliado" %}<span class="badge text-bg-success">Conciliado</span>{% elif r.resultado == "ya_conciliado" %}<span class="badge text-bg-secondary">Ya estaba conciliado</span>{% elif r.resultado == "monto_distinto" %}<span class="badge text-bg-warning">Monto distinto</span>{% else %}<span class="badge text-bg-danger">No registrado en el sistema</span>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody></table>
+  {% endif %}
+</div></div>
+<h2 class="h5">Pagos pendientes de conciliar <small class="text-muted">(Bs {{ total_pendiente }})</small></h2>
+<div class="card"><div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
+  <thead><tr><th>Fecha</th><th>Comprobante</th><th>Referencia</th><th>Reserva</th><th>Método</th><th class="text-end">Monto</th><th></th></tr></thead><tbody>
+  {% for p in pendientes %}
+  <tr><td>{{ p.fecha_pago|date:"d/m/Y H:i" }}</td><td>{{ p.nro_comprobante }}</td><td>{{ p.referencia_transaccion|default:"-" }}</td>
+    <td>{{ p.reserva.codigo }}</td><td>{{ p.get_metodo_display }} ({{ p.get_canal_display }})</td><td class="text-end">{{ p.monto }}</td>
+    <td class="text-end"><form method="post" action="{% url 'payments:conciliar' p.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-success">Marcar conciliado</button></form></td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Todo conciliado.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

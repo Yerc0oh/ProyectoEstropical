@@ -14,6 +14,8 @@ urlpatterns = [
     path("", include("apps.hotels.urls")),
     path("", include("apps.flights.urls")),
     path("", include("apps.packages.urls")),
+    path("", include("apps.reservations.urls")),
+    path("", include("apps.payments.urls")),
 ]
 
 if settings.DEBUG:

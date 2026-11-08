@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Pagar {{ reserva.codigo }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-7"><div class="card"><div class="card-body">
+  <h1 class="h4">Pagar reserva {{ reserva.codigo }}</h1>
+  <p class="text-muted mb-2">{{ reserva.paquete.nombre }}</p>
+  <p class="fs-4 fw-bold mb-1">Bs {{ monto }}</p>
+  <p class="small text-muted">{% if cuota %}Cuota {{ cuota.numero }} (vence {{ cuota.fecha_vencimiento|date:"d/m/Y" }}).{% else %}Saldo total de la reserva.
+    <a href="{% url 'payments:cuotas' reserva.pk %}">¿Prefieres pagar en cuotas?</a>{% endif %}</p>
+  <div class="alert alert-info small">Entorno académico: los pagos se procesan con una <b>pasarela simulada</b>. No se cobra dinero real
+    ni se guardan datos de la tarjeta. Tarjeta de prueba aprobada: 4111 1111 1111 1111 · rechazada: 4000 0000 0000 0002.</div>
+  <form method="post" novalidate id="form-pago">{% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="mb-3">
+      {% for radio in form.metodo %}
+      <div class="form-check form-check-inline">{{ radio.tag }} <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label></div>
+      {% endfor %}
+      {% for e in form.metodo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <div id="bloque-qr" class="text-center border rounded p-3 mb-3">
+      <div id="qr-pago" class="mx-auto mb-2 bg-white border d-inline-block p-2" data-texto="{{ referencia_qr }}"></div>
+      <div class="small text-muted">Escanea con la app de tu banco y luego presiona «Pagar».<br><code>{{ referencia_qr }}</code></div>
+    </div>
+    <div id="bloque-tarjeta" class="row g-2 mb-3">
+      <div class="col-12"><label class="form-label">{{ form.numero_tarjeta.label }}</label>{{ form.numero_tarjeta }}
+        {% for e in form.numero_tarjeta.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+      <div class="col-6"><label class="form-label">{{ form.vencimiento.label }}</label>{{ form.vencimiento }}
+        {% for e in form.vencimiento.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+      <div class="col-6"><label class="form-label">{{ form.cvv.label }}</label>{{ form.cvv }}
+        {% for e in form.cvv.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+    </div>
+    <button class="btn btn-primary">Pagar Bs {{ monto }}</button>
+    <a class="btn btn-link" href="{% url 'reservations:detalle' reserva.pk %}">Volver</a>
+  </form>
+</div></div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+(function () {
+  // QR simulado: solo contiene el texto de referencia del pago, no realiza ningún cobro.
+  const caja = document.getElementById('qr-pago');
+  if (typeof qrcode === 'function') {
+    const qr = qrcode(0, 'M');
+    qr.addData(caja.dataset.texto);
+    qr.make();
+    caja.innerHTML = qr.createImgTag(5, 8);
+  } else {
+    caja.innerHTML = '<span class="small text-muted">No se pudo generar el QR (sin internet).</span>';
+  }
+
+  const radios = document.querySelectorAll('#form-pago input[name="metodo"]');
+  function mostrar() {
+    const m = (document.querySelector('#form-pago input[name="metodo"]:checked') || {}).value;
+    document.getElementById('bloque-qr').style.display = m === 'qr' ? '' : 'none';
+    document.getElementById('bloque-tarjeta').style.display = m === 'tarjeta' ? '' : 'none';
+  }
+  radios.forEach(r => r.addEventListener('change', mostrar));
+  mostrar();
+})();
+</script>
+{% endblock %}
