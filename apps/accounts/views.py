@@ -29,9 +29,10 @@ def registro(request):
         return redirect("core:home")
     form = RegistroForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        registrar_cliente(form.cleaned_data)
+        _, correo_enviado = registrar_cliente(form.cleaned_data)
         return render(request, "accounts/registro_pendiente.html",
-                      {"email": form.cleaned_data["email"]})
+                      {"email": form.cleaned_data["email"],
+                       "correo_enviado": correo_enviado})
     return render(request, "accounts/registro.html", {"form": form})
 
 

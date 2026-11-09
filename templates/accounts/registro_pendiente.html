@@ -1,6 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Verifica tu correo{% endblock %}
 {% block content %}
-<div class="text-center py-5"><h1 class="h3">Revisa tu correo</h1>
-<p>Enviamos un enlace de verificación a <strong>{{ email }}</strong>. Debes abrirlo para activar tu cuenta.</p></div>
+<div class="text-center py-5">
+  <h1 class="h3">Revisa tu correo</h1>
+  {% if correo_enviado %}
+    <p>Enviamos un enlace de verificación a <strong>{{ email }}</strong>. Debes abrirlo para activar tu cuenta.</p>
+  {% else %}
+    <div class="alert alert-warning text-start" role="alert">
+      La cuenta se creó correctamente, pero <strong>no pudimos enviar el correo de verificación</strong>.
+      Intenta reenviarlo en unos minutos o contacta a la agencia.
+    </div>
+    <p class="text-muted">Tu cuenta ya existe pero permanece inactiva hasta que confirmes el correo.</p>
+    <a class="btn btn-primary" href="{% url 'accounts:reenviar_activacion' %}">Reenviar verificación</a>
+  {% endif %}
+  <div class="mt-3">
+    <a class="btn btn-outline-secondary" href="{% url 'accounts:login' %}">Volver a ingresar</a>
+  </div>
+</div>
 {% endblock %}

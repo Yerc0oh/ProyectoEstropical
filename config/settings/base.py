@@ -111,6 +111,42 @@ EMAIL_CONFIG = env.email("EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Estropical <no-reply@estropical.local>")
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
+# Corta rápido si el servidor SMTP no responde (Render bloquea los puertos 25/465/587
+# en el plan gratuito, así que sin esto el registro se queda colgado minutos).
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=10)
+
+# ------------------------------------------------- Correo por API HTTPS (recomendado en Render)
+# Render bloquea SMTP saliente en el plan gratuito. Si se define una de estas
+# claves, el correo se envía por la API HTTPS del proveedor (puerto 443).
+RESEND_API_KEY = env("RESEND_API_KEY", default="")
+BREVO_API_KEY = env("BREVO_API_KEY", default="")
+SENDGRID_API_KEY = env("SENDGRID_API_KEY", default="")
+MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
+MAILGUN_SENDER_DOMAIN = env("MAILGUN_SENDER_DOMAIN", default="")
+
+if RESEND_API_KEY:
+    INSTALLED_APPS.append("anymail")
+    EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+    ANYMAIL = {"RESEND_API_KEY": RESEND_API_KEY}
+elif BREVO_API_KEY:
+    INSTALLED_APPS.append("anymail")
+    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+    ANYMAIL = {"BREVO_API_KEY": BREVO_API_KEY}
+elif SENDGRID_API_KEY:
+    INSTALLED_APPS.append("anymail")
+    EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+    ANYMAIL = {"SENDGRID_API_KEY": SENDGRID_API_KEY}
+elif MAILGUN_API_KEY:
+    INSTALLED_APPS.append("anymail")
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+    ANYMAIL = {
+        "MAILGUN_API_KEY": MAILGUN_API_KEY,
+        "MAILGUN_SENDER_DOMAIN": MAILGUN_SENDER_DOMAIN,
+    }
+    if MAILGUN_SENDER_DOMAIN:
+        DEFAULT_FROM_EMAIL = env(
+            "DEFAULT_FROM_EMAIL",
+            default=f"Estropical <postmaster@{MAILGUN_SENDER_DOMAIN}>")
 
 # ---------------------------------------------------------------- Inteligencia Artificial - Sprint 5
 # Integración con Google Gemini para recomendaciones y chatbot turístico.

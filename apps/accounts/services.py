@@ -1,4 +1,5 @@
 """Lógica de negocio de cuentas (fuera de las vistas para poder probarla)."""
+import logging
 import secrets
 
 from django.conf import settings
@@ -16,12 +17,33 @@ from apps.core.access import ROL_CLIENTE
 from .models import Perfil
 from .tokens import activation_token, email_change_token
 
+logger = logging.getLogger(__name__)
+
+
+def _enviar_correo(asunto, cuerpo, destinatario):
+    """Envía el correo sin tumbar la petición si el transporte falla.
+
+    En Render (plan gratuito) los puertos SMTP están bloqueados; un intento
+    fallido puede tardar minutos y terminar en un 500. Registrar el error y
+    devolver False permite que la cuenta ya creada siga siendo utilizable y que
+    el usuario pueda pedir un reenvío cuando el correo esté bien configurado.
+    """
+    try:
+        send_mail(asunto, cuerpo, settings.DEFAULT_FROM_EMAIL, [destinatario])
+        return True
+    except Exception:
+        logger.exception("No se pudo enviar el correo a %s", destinatario)
+        return False
+
 
 def registrar_cliente(datos):
     """Crea usuario INACTIVO + perfil + rol Cliente y envía el correo de verificación.
 
     Usuario, perfil y rol se guardan en una sola transacción: si algo falla no queda
-    ningún registro parcial. El correo solo se envía después de confirmar la transacción.
+    ningún registro parcial. El correo se envía después de confirmar la transacción
+    y su fallo no revierte la cuenta ni provoca un error 500.
+
+    Devuelve ``(user, correo_enviado)``.
     """
     email = datos["email"].lower()
     with transaction.atomic():
@@ -33,8 +55,8 @@ def registrar_cliente(datos):
             tipo_documento=datos["tipo_documento"], nro_documento=datos["nro_documento"],
             telefono=datos.get("telefono", ""))
         user.groups.add(Group.objects.get(name=ROL_CLIENTE))
-        transaction.on_commit(lambda: enviar_correo_activacion(user))
-    return user
+    correo_enviado = enviar_correo_activacion(user)
+    return user, correo_enviado
 
 
 def enviar_correo_activacion(user):
@@ -44,7 +66,7 @@ def enviar_correo_activacion(user):
     asunto = render_to_string("accounts/email/activation_subject.txt").strip()
     cuerpo = render_to_string("accounts/email/activation_email.txt",
                               {"user": user, "enlace": enlace})
-    send_mail(asunto, cuerpo, settings.DEFAULT_FROM_EMAIL, [user.email])
+    return _enviar_correo(asunto, cuerpo, user.email)
 
 
 def _enlace_cambio_correo(user):
@@ -60,7 +82,7 @@ def enviar_correo_cambio(user, nuevo_email):
     cuerpo = render_to_string("accounts/email/cambio_correo_email.txt", {
         "user": user, "nuevo_email": nuevo_email,
         "enlace": _enlace_cambio_correo(user)})
-    send_mail(asunto, cuerpo, settings.DEFAULT_FROM_EMAIL, [nuevo_email])
+    return _enviar_correo(asunto, cuerpo, nuevo_email)
 
 
 def solicitar_cambio_correo(user, nuevo_email):

@@ -7,3 +7,4 @@ openpyxl
 reportlab
 gunicorn>=23.0
 whitenoise>=6.8
+django-anymail>=12.0
