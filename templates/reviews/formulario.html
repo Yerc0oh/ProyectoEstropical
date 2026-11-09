@@ -1,0 +1,52 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card border-0 shadow-sm mx-auto"
+         style="max-width:650px;border-radius:18px;">
+
+        <div class="card-body p-4">
+            <h3 class="fw-bold text-primary mb-3">
+                ⭐ {% if editando %}Editar{% else %}Nueva{% endif %} reseña
+            </h3>
+
+            <p class="text-muted">
+                Comparte tu opinión sobre:
+                <strong>{{ paquete.nombre }}</strong>
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {{ form.non_field_errors }}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        Calificación
+                    </label>
+                    {{ form.calificacion }}
+                    {{ form.calificacion.errors }}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        Tu experiencia
+                    </label>
+                    {{ form.comentario }}
+                    {{ form.comentario.errors }}
+                </div>
+
+                <button class="btn btn-primary">
+                    Guardar reseña
+                </button>
+
+                <a href="{% url 'reviews:mis_resenas' %}"
+                   class="btn btn-outline-secondary">
+                    Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

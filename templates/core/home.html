@@ -1,10 +1,634 @@
+
 {% extends "base.html" %}
+
 {% block title %}Inicio{% endblock %}
+{% block main_class %}main-home{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Estilos específicos de la portada.
+     Se incluyen aquí para que el carrusel se vea
+     correctamente mientras verificamos el CSS global. */
+
+  .main-home {
+    width: 100%;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .est-carousel,
+  .est-carousel .carousel-inner,
+  .est-carousel .carousel-item {
+    height: min(76vh, 700px);
+    min-height: 490px;
+  }
+
+  .est-carousel .carousel-item {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .est-carousel .carousel-item > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .est-carousel .carousel-item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(3, 28, 45, .78),
+      rgba(3, 28, 45, .28)
+    );
+    pointer-events: none;
+  }
+
+  .est-carousel .carousel-caption {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    bottom: auto;
+    left: max(7%, calc((100vw - 1140px) / 2));
+    right: 12%;
+    transform: translateY(-50%);
+    text-align: left;
+    max-width: 700px;
+  }
+
+  .est-carousel .carousel-caption h1,
+  .est-carousel .carousel-caption h2 {
+    font-size: clamp(2.5rem, 5.5vw, 5rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -1.5px;
+    color: #fff;
+    margin: 16px 0 22px;
+  }
+
+  .est-carousel .carousel-caption p {
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    color: #f1f7fa;
+    max-width: 570px;
+    margin-bottom: 30px;
+  }
+
+  .est-kicker {
+    display: inline-block;
+    padding: 9px 16px;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.4);
+    border-radius: 50px;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+  }
+
+  .est-hero-btn {
+    display: inline-block;
+    background: #fff;
+    color: #073b54;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .2s;
+  }
+
+  .est-hero-btn:hover {
+    background: #d8f6f5;
+    color: #073b54;
+    transform: translateY(-2px);
+  }
+
+  .est-carousel .carousel-indicators {
+    z-index: 3;
+    bottom: 22px;
+  }
+
+  .est-carousel .carousel-indicators button {
+    width: 30px;
+    height: 4px;
+    border-radius: 4px;
+  }
+
+  .est-carousel .carousel-control-prev,
+  .est-carousel .carousel-control-next {
+    z-index: 3;
+    width: 6%;
+  }
+
+  .est-section {
+    padding: 85px 0;
+  }
+
+  .est-section-alt {
+    background: #f1f8fa;
+  }
+
+  .est-section-label {
+    color: #07849b;
+    font-size: .8rem;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .est-section-title {
+    color: #073b54;
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 15px;
+  }
+
+  .est-section-subtitle {
+    color: #617789;
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .est-destination-card {
+    position: relative;
+    display: block;
+    height: 390px;
+    overflow: hidden;
+    border-radius: 22px;
+    text-decoration: none;
+    box-shadow: 0 12px 30px rgba(6, 53, 75, .12);
+    transition: transform .25s;
+  }
+
+  .est-destination-card:hover {
+    transform: translateY(-6px);
+  }
+
+  .est-destination-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s;
+  }
+
+  .est-destination-card:hover img {
+    transform: scale(1.05);
+  }
+
+  .est-destination-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 24, 40, .85),
+      transparent 70%
+    );
+  }
+
+  .est-destination-info {
+    position: absolute;
+    z-index: 1;
+    left: 26px;
+    right: 26px;
+    bottom: 25px;
+    color: #fff;
+  }
+
+  .est-destination-info small {
+    font-weight: 700;
+    letter-spacing: 1.4px;
+  }
+
+  .est-destination-info h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 8px 0;
+  }
+
+  .est-benefit {
+    height: 100%;
+    background: #fff;
+    padding: 32px;
+    border-radius: 20px;
+    border: 1px solid #e0ecf1;
+    box-shadow: 0 10px 25px rgba(6, 53, 75, .05);
+  }
+
+  .est-benefit-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    background: #e2f5f6;
+    color: #087e96;
+    border-radius: 17px;
+    font-size: 1.65rem;
+    margin-bottom: 22px;
+  }
+
+  .est-benefit h3 {
+    font-size: 1.3rem;
+    color: #073b54;
+    font-weight: 700;
+  }
+
+  .est-benefit p {
+    color: #617789;
+    margin: 0;
+  }
+
+  .est-cta {
+    background: linear-gradient(125deg, #087e96, #073b54);
+    color: #fff;
+    border-radius: 28px;
+    padding: 65px 30px;
+    text-align: center;
+  }
+
+  .est-cta h2 {
+    font-weight: 800;
+    font-size: clamp(2rem, 3vw, 3rem);
+  }
+
+  .est-cta p {
+    color: #e3f2f5;
+    margin: 18px auto 28px;
+    max-width: 600px;
+  }
+
+  @media (max-width: 767.98px) {
+    .est-carousel,
+    .est-carousel .carousel-inner,
+    .est-carousel .carousel-item {
+      height: 620px;
+      min-height: 620px;
+    }
+
+    .est-carousel .carousel-caption {
+      left: 8%;
+      right: 8%;
+      max-width: none;
+    }
+
+    .est-carousel .carousel-caption h1,
+    .est-carousel .carousel-caption h2 {
+      font-size: clamp(2.25rem, 9vw, 3.5rem);
+    }
+
+    .est-carousel .carousel-item::after {
+      background: rgba(3, 28, 45, .6);
+    }
+
+    .est-carousel .carousel-control-prev,
+    .est-carousel .carousel-control-next {
+      width: 8%;
+    }
+
+    .est-section {
+      padding: 55px 0;
+    }
+
+    .est-destination-card {
+      height: 340px;
+    }
+
+    .est-cta {
+      border-radius: 20px;
+      padding: 48px 22px;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="p-5 mb-4 bg-white rounded-3 border">
-  <h1 class="display-6">Tropical Tours</h1>
-  <p class="lead">Busca, reserva y paga tus viajes. <!-- TODO: contenido de portada --></p>
-  <a class="btn btn-primary" href="{% url 'packages:catalogo' %}">Ver paquetes</a>
-  <a class="btn btn-outline-primary" href="{% url 'destinations:catalogo' %}">Ver destinos</a>
+
+<!-- CARRUSEL PRINCIPAL -->
+<div id="estropicalCarousel"
+     class="carousel slide carousel-fade est-carousel"
+     data-bs-ride="carousel"
+     data-bs-interval="5500"
+     data-bs-pause="hover">
+
+  <div class="carousel-indicators">
+    <button type="button"
+            data-bs-target="#estropicalCarousel"
+            data-bs-slide-to="0"
+            class="active"
+            aria-current="true"
+            aria-label="Playa tropical"></button>
+
+    <button type="button"
+            data-bs-target="#estropicalCarousel"
+            data-bs-slide-to="1"
+            aria-label="Machu Picchu"></button>
+
+    <button type="button"
+            data-bs-target="#estropicalCarousel"
+            data-bs-slide-to="2"
+            aria-label="Barcelona"></button>
+  </div>
+
+  <div class="carousel-inner">
+
+    <!-- DIAPOSITIVA 1 -->
+    <div class="carousel-item active">
+
+      <img
+        src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1920&amp;q=85"
+        alt="Playa tropical con mar turquesa"
+        fetchpriority="high">
+
+      <div class="carousel-caption">
+        <span class="est-kicker">
+          DESCUBRE EL MUNDO
+        </span>
+
+        <h1>Tu próxima aventura comienza aquí.</h1>
+
+        <p>
+          Explora destinos increíbles y encuentra
+          el viaje perfecto para ti con Estropical.
+        </p>
+
+        <a href="{% url 'packages:catalogo' %}"
+           class="est-hero-btn">
+          Explorar paquetes
+          <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 2 -->
+    <div class="carousel-item">
+
+      <img
+        src="https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&amp;fit=crop&amp;w=1920&amp;q=85"
+        alt="Machu Picchu, Perú">
+
+      <div class="carousel-caption">
+        <span class="est-kicker">
+          CULTURA Y AVENTURA
+        </span>
+
+        <h2>Descubre lugares extraordinarios.</h2>
+
+        <p>
+          Conoce destinos llenos de historia,
+          naturaleza y experiencias inolvidables.
+        </p>
+
+        <a href="{% url 'destinations:catalogo' %}"
+           class="est-hero-btn">
+          Ver destinos
+          <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 3 -->
+    <div class="carousel-item">
+
+      <img
+        src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&amp;fit=crop&amp;w=1920&amp;q=85"
+        alt="Vista panorámica de Barcelona, España">
+
+      <div class="carousel-caption">
+        <span class="est-kicker">
+          VIAJA A TU MANERA
+        </span>
+
+        <h2>El mundo está esperando por ti.</h2>
+
+        <p>
+          Compara opciones, descubre nuevos lugares
+          y comienza a organizar tu próximo viaje.
+        </p>
+
+        <a href="{% url 'packages:catalogo' %}"
+           class="est-hero-btn">
+          Encontrar mi viaje
+          <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="carousel-control-prev"
+          type="button"
+          data-bs-target="#estropicalCarousel"
+          data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"
+          aria-hidden="true"></span>
+    <span class="visually-hidden">Anterior</span>
+  </button>
+
+  <button class="carousel-control-next"
+          type="button"
+          data-bs-target="#estropicalCarousel"
+          data-bs-slide="next">
+    <span class="carousel-control-next-icon"
+          aria-hidden="true"></span>
+    <span class="visually-hidden">Siguiente</span>
+  </button>
+
 </div>
+
+
+<!-- DESTINOS -->
+<section class="est-section est-section-alt">
+  <div class="container">
+
+    <div class="text-center mb-5">
+      <div class="est-section-label">
+        INSPÍRATE PARA VIAJAR
+      </div>
+
+      <h2 class="est-section-title">
+        Descubre destinos increíbles
+      </h2>
+
+      <p class="est-section-subtitle">
+        Desde playas tropicales hasta ciudades
+        llenas de cultura e historia.
+      </p>
+    </div>
+
+    <div class="row g-4">
+
+      <div class="col-md-6 col-lg-4">
+        <a href="{% url 'destinations:catalogo' %}"
+           class="est-destination-card">
+
+          <img
+            src="https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&amp;fit=crop&amp;w=900&amp;q=85"
+            alt="Río de Janeiro, Brasil"
+            loading="lazy">
+
+          <div class="est-destination-info">
+            <small>BRASIL</small>
+            <h3>Río de Janeiro</h3>
+            <span>Explorar destinos →</span>
+          </div>
+
+        </a>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <a href="{% url 'destinations:catalogo' %}"
+           class="est-destination-card">
+
+          <img
+            src="https://images.unsplash.com/photo-1526392060635-9d6019884377?auto=format&amp;fit=crop&amp;w=900&amp;q=85"
+            alt="Machu Picchu, Perú"
+            loading="lazy">
+
+          <div class="est-destination-info">
+            <small>PERÚ</small>
+            <h3>Machu Picchu</h3>
+            <span>Explorar destinos →</span>
+          </div>
+
+        </a>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <a href="{% url 'destinations:catalogo' %}"
+           class="est-destination-card">
+
+          <img
+            src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&amp;fit=crop&amp;w=900&amp;q=85"
+            alt="Barcelona, España"
+            loading="lazy">
+
+          <div class="est-destination-info">
+            <small>ESPAÑA</small>
+            <h3>Barcelona</h3>
+            <span>Explorar destinos →</span>
+          </div>
+
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- BENEFICIOS -->
+<section class="est-section">
+  <div class="container">
+
+    <div class="text-center mb-5">
+      <div class="est-section-label">
+        ¿POR QUÉ ESTROPICAL?
+      </div>
+
+      <h2 class="est-section-title">
+        Organiza tus viajes fácilmente
+      </h2>
+
+      <p class="est-section-subtitle">
+        Una plataforma pensada para ayudarte
+        a descubrir y gestionar tus viajes.
+      </p>
+    </div>
+
+    <div class="row g-4">
+
+      <div class="col-md-6 col-lg-4">
+        <div class="est-benefit">
+          <div class="est-benefit-icon">
+            <i class="bi bi-compass"></i>
+          </div>
+
+          <h3>Explora destinos</h3>
+          <p>
+            Descubre lugares y consulta paquetes
+            turísticos disponibles.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="est-benefit">
+          <div class="est-benefit-icon">
+            <i class="bi bi-calendar-check"></i>
+          </div>
+
+          <h3>Gestiona tus reservas</h3>
+          <p>
+            Organiza tus solicitudes y consulta
+            el estado de tus viajes.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="est-benefit">
+          <div class="est-benefit-icon">
+            <i class="bi bi-robot"></i>
+          </div>
+
+          <h3>Asistente turístico IA</h3>
+          <p>
+            Consulta opciones de viaje y recibe
+            orientación según el catálogo.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<!-- REGISTRO -->
+<section class="pb-5">
+  <div class="container">
+
+    <div class="est-cta">
+      <h2>Tu próxima experiencia te espera</h2>
+
+      <p>
+        Explora nuevos lugares y encuentra
+        una aventura que quieras recordar.
+      </p>
+
+      {% if user.is_authenticated %}
+
+        <a href="{% url 'packages:catalogo' %}"
+           class="est-hero-btn">
+          Ver paquetes disponibles
+        </a>
+
+      {% else %}
+
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+          <a href="{% url 'accounts:registro' %}"
+             class="est-hero-btn">
+            Crear mi cuenta
+          </a>
+
+          <a href="{% url 'accounts:login' %}"
+             class="btn btn-outline-light rounded-pill px-4 py-3">
+            Iniciar sesión
+          </a>
+        </div>
+
+      {% endif %}
+
+    </div>
+
+  </div>
+</section>
+
 {% endblock %}

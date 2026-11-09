@@ -1,0 +1,70 @@
+
+{% extends "base.html" %}
+
+{% block title %}Vuelo {{ vuelo.numero_vuelo }} | Estropical{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <a href="{% url 'flights:catalogo' %}"
+       class="btn btn-link mb-3">
+        <i class="bi bi-arrow-left"></i>
+        Volver a vuelos
+    </a>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+
+            <span class="badge bg-primary mb-3">
+                {{ vuelo.numero_vuelo }}
+            </span>
+
+            <h2 class="fw-bold mb-4">
+                {{ vuelo.origen.nombre }}
+                <i class="bi bi-arrow-right text-primary"></i>
+                {{ vuelo.destino.nombre }}
+            </h2>
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <h6 class="text-muted">Salida</h6>
+                    <h5>
+                        {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}
+                    </h5>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted">Llegada</h6>
+                    <h5>
+                        {{ vuelo.fecha_llegada|date:"d/m/Y H:i" }}
+                    </h5>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted">Asientos disponibles</h6>
+                    <h5>{{ vuelo.asientos_disponibles }}</h5>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted">Precio referencial</h6>
+                    <h3 class="text-primary">
+                        Bs {{ vuelo.precio_referencial }}
+                    </h3>
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="alert alert-info">
+                Este vuelo se encuentra disponible para consulta.
+                La reserva individual se habilitará al integrar
+                el módulo de reservas.
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

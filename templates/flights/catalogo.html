@@ -1,0 +1,169 @@
+
+{% extends "base.html" %}
+
+{% block title %}Vuelos | Estropical{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <h1 class="fw-bold mb-2">
+        <i class="bi bi-airplane text-primary"></i>
+        Encuentra tu próximo vuelo
+    </h1>
+
+    <p class="text-muted mb-4">
+        Consulta rutas, horarios y precios disponibles.
+    </p>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+
+            <form method="get" class="row g-3">
+
+                <div class="col-md-4">
+                    <label class="form-label">Origen</label>
+                    <select name="origen" class="form-select">
+                        <option value="">Todos</option>
+                        {% for destino in destinos %}
+                        <option value="{{ destino.pk }}"
+                            {% if origen_seleccionado == destino.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ destino.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Destino</label>
+                    <select name="destino" class="form-select">
+                        <option value="">Todos</option>
+                        {% for destino in destinos %}
+                        <option value="{{ destino.pk }}"
+                            {% if destino_seleccionado == destino.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ destino.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Fecha de salida</label>
+                    <input type="date"
+                           name="fecha"
+                           value="{{ fecha_seleccionada }}"
+                           class="form-control">
+                </div>
+
+                <div class="col-12 text-end">
+                    <button class="btn btn-primary px-4">
+                        <i class="bi bi-search"></i>
+                        Buscar vuelos
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3">
+
+        {% for vuelo in vuelos %}
+        <div class="col-12">
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+
+                    <div class="row align-items-center g-3">
+
+                        <div class="col-md-3">
+                            <span class="badge bg-primary mb-2">
+                                {{ vuelo.numero_vuelo }}
+                            </span>
+                            <h5 class="fw-bold mb-1">
+                                {{ vuelo.origen.nombre }}
+                            </h5>
+                            <small class="text-muted">
+                                {{ vuelo.fecha_salida|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+
+                        <div class="col-md-2 text-center">
+                            <i class="bi bi-airplane fs-2 text-primary"></i>
+                        </div>
+
+                        <div class="col-md-3">
+                            <h5 class="fw-bold mb-1">
+                                {{ vuelo.destino.nombre }}
+                            </h5>
+                            <small class="text-muted">
+                                {{ vuelo.fecha_llegada|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+
+                        <div class="col-md-2">
+                            <small class="text-muted">Precio referencial</small>
+                            <h5 class="fw-bold text-primary">
+                                Bs {{ vuelo.precio_referencial }}
+                            </h5>
+                            <small>
+                                {{ vuelo.asientos_disponibles }}
+                                asientos disponibles
+                            </small>
+                        </div>
+
+                        <div class="col-md-2">
+                            <a href="{% url 'flights:detalle' vuelo.pk %}"
+                               class="btn btn-primary w-100">
+                                Ver vuelo
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-airplane fs-1 text-muted"></i>
+            <h5>No encontramos vuelos disponibles</h5>
+            <p class="text-muted">
+                Prueba con otros destinos o fechas.
+            </p>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    {% if is_paginated %}
+    <nav class="mt-4" aria-label="Páginas de vuelos">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?origen={{ origen_seleccionado }}&destino={{ destino_seleccionado }}&fecha={{ fecha_seleccionada }}&page={{ page_obj.previous_page_number }}">
+                    Anterior
+                </a>
+            </li>
+            {% endif %}
+            <li class="page-item disabled">
+                <span class="page-link">
+                    {{ page_obj.number }} de {{ paginator.num_pages }}
+                </span>
+            </li>
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?origen={{ origen_seleccionado }}&destino={{ destino_seleccionado }}&fecha={{ fecha_seleccionada }}&page={{ page_obj.next_page_number }}">
+                    Siguiente
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

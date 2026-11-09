@@ -1,0 +1,101 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Mis preferencias de viaje</h2>
+            <p class="text-muted">
+                Personaliza tus viajes y recibe recomendaciones.
+            </p>
+        </div>
+        <a href="{% url 'preferences:crear' %}"
+           class="btn btn-primary">
+            Nueva preferencia
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <input type="search" id="buscarPreferencia"
+                   class="form-control mb-3"
+                   placeholder="Buscar preferencias...">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle"
+                       id="tablaPreferencias">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo de viaje</th>
+                            <th>Presupuesto</th>
+                            <th>Duración</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in preferencias %}
+                        <tr>
+                            <td>{{ p.nombre }}</td>
+                            <td>{{ p.get_tipo_viaje_display }}</td>
+                            <td>
+                                Bs {{ p.presupuesto_minimo }}
+                                - {{ p.presupuesto_maximo }}
+                            </td>
+                            <td>
+                                {{ p.duracion_minima }}
+                                - {{ p.duracion_maxima }} días
+                            </td>
+                            <td>
+                                {% if p.activa %}
+                                <span class="badge bg-success">Activa</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactiva</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'preferences:detalle' p.pk %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Ver
+                                </a>
+                                <a href="{% url 'preferences:editar' p.pk %}"
+                                   class="btn btn-sm btn-outline-warning">
+                                    Editar
+                                </a>
+                                <form method="post"
+                                      action="{% url 'preferences:eliminar' p.pk %}"
+                                      class="d-inline"
+                                      onsubmit="return confirm('¿Eliminar esta preferencia?');">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                Todavía no tienes preferencias registradas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("buscarPreferencia").addEventListener("input", function () {
+    const texto = this.value.toLowerCase();
+    document.querySelectorAll("#tablaPreferencias tbody tr").forEach(fila => {
+        fila.hidden = !fila.textContent.toLowerCase().includes(texto);
+    });
+});
+</script>
+{% endblock %}

@@ -29,6 +29,15 @@ INSTALLED_APPS = [
     "apps.packages",      # Sprint 2: paquetes turísticos
     "apps.reservations",  # Sprint 3: reservas, pasajeros, documentos, itinerarios
     "apps.payments",      # Sprint 4: pagos, cuotas, facturas, reembolsos, caja
+    # Sprint 5
+    "apps.preferences",
+    "apps.recommendations",
+    "apps.reports",
+    "apps.notifications.apps.NotificationsConfig",
+    # Sprint 6
+    "apps.support", 
+    "apps.reviews.apps.ReviewsConfig",
+
 ]
 
 MIDDLEWARE = [
@@ -97,6 +106,12 @@ EMAIL_CONFIG = env.email("EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Estropical <no-reply@estropical.local>")
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
+
+# ---------------------------------------------------------------- Inteligencia Artificial - Sprint 5
+# Integración con Google Gemini para recomendaciones y chatbot turístico.
+
+GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+GEMINI_MODEL = env("GEMINI_MODEL", default="gemini-3.8-flash")
 
 # ---------------------------------------------------------------- Internacionalización
 LANGUAGE_CODE = "es"

@@ -71,14 +71,43 @@ class Paquete(models.Model):
         super().save(*args, **kwargs)
 
 
+
 class PaqueteHotel(models.Model):
-    paquete = models.ForeignKey(Paquete, on_delete=models.CASCADE)
-    tipo_habitacion = models.ForeignKey("hotels.TipoHabitacion", on_delete=models.PROTECT)
+    paquete = models.ForeignKey(
+        Paquete,
+        on_delete=models.CASCADE
+    )
+
+    tipo_habitacion = models.ForeignKey(
+        "hotels.TipoHabitacion",
+        on_delete=models.PROTECT
+    )
+
     noches = models.SmallIntegerField()
+
+    dia_inicio = models.PositiveSmallIntegerField(
+        default=1,
+        verbose_name="Día de inicio del alojamiento",
+        help_text="Día del itinerario en que comienza la estancia."
+    )
 
     class Meta:
         db_table = "paquete_hotel"
-        constraints = [models.UniqueConstraint(fields=["paquete", "tipo_habitacion"], name="uq_paquete_hotel")]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["paquete", "tipo_habitacion"],
+                name="uq_paquete_hotel"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(dia_inicio__gte=1),
+                name="ck_paquete_hotel_dia_inicio"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(noches__gte=1),
+                name="ck_paquete_hotel_noches"
+            ),
+        ]
 
 
 class PaqueteVuelo(models.Model):

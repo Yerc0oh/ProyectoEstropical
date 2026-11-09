@@ -6,6 +6,11 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from django.db.models import Prefetch
+from django.utils import timezone
+from django.views.generic import DetailView
+
+
 from apps.core.access import AdminRequiredMixin
 from apps.core.views_base import (AdminCapacidadUpdateView, AdminCreateView,
                                   AdminListView, AdminSoftDeleteView,
@@ -211,3 +216,65 @@ class TarifaHabitacionEliminar(TipoHabitacionAnidadoMixin, DeleteView):
     def form_valid(self, form):
         messages.success(self.request, "Tarifa eliminada.")
         return super().form_valid(form)
+
+
+
+# CATÁLOGO PÚBLICO DE HOTELES
+
+class HotelCatalogo(ListView):
+    model = Hotel
+    template_name = "hotels/catalogo.html"
+    context_object_name = "hoteles"
+    paginate_by = 12
+
+    def get_queryset(self):
+        queryset = Hotel.objects.filter(
+            activo=True
+        ).select_related("destino", "proveedor")
+
+        destino = self.request.GET.get("destino")
+        nombre = self.request.GET.get("nombre", "").strip()
+
+        if destino and destino.isdigit():
+            queryset = queryset.filter(destino_id=int(destino))
+
+        if nombre:
+            queryset = queryset.filter(nombre__icontains=nombre)
+
+        return queryset.order_by("nombre")
+
+    def get_context_data(self, **kwargs):
+        from apps.destinations.models import Destino
+
+        context = super().get_context_data(**kwargs)
+        context["destinos"] = Destino.objects.filter(
+            hoteles__activo=True
+        ).distinct().order_by("nombre")
+        context["destino_seleccionado"] = self.request.GET.get(
+            "destino", ""
+        )
+        context["busqueda"] = self.request.GET.get("nombre", "")
+        return context
+
+
+class HotelDetalle(DetailView):
+    model = Hotel
+    template_name = "hotels/detalle.html"
+    context_object_name = "hotel"
+
+    def get_queryset(self):
+        return Hotel.objects.filter(
+            activo=True
+        ).select_related("destino", "proveedor").prefetch_related(
+            Prefetch(
+                "tipos_habitacion",
+                queryset=TipoHabitacion.objects.prefetch_related(
+                    "tarifas"
+                )
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["hoy"] = timezone.localdate()
+        return context

@@ -16,6 +16,14 @@ urlpatterns = [
     path("", include("apps.packages.urls")),
     path("", include("apps.reservations.urls")),
     path("", include("apps.payments.urls")),
+    path("", include("apps.preferences.urls")),
+    path("", include("apps.recommendations.urls")),
+    path("notificaciones/", include("apps.notifications.urls")),
+    path("reportes/", include("apps.reports.urls")),
+    path("soporte/", include("apps.support.urls")),
+    
+    path("resenas/", include("apps.reviews.urls")),
+
 ]
 
 if settings.DEBUG:

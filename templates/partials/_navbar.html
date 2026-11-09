@@ -1,99 +1,643 @@
-<nav class="navbar navbar-expand-lg navbar-dark navbar-est">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="{% url 'core:home' %}">Estropical</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="menu">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="{% url 'destinations:catalogo' %}">Destinos</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'packages:catalogo' %}">Paquetes</a></li>
-{% if proveedor_usuario %}
-<li class="nav-item">
-  <a class="nav-link" href="{% url 'suppliers:mis_documentos' %}">
-    Mis documentos
-  </a>
-</li>
-{% endif %}
 
-{% if es_cliente %}
-<li class="nav-item dropdown">
-  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-    Mis viajes
-  </a>
-  <ul class="dropdown-menu">
-    <li>
-      <a class="dropdown-item" href="{% url 'reservations:mis_reservas' %}">
-        Mis reservas
-      </a>
-    </li>
-    <li>
-      <a class="dropdown-item" href="{% url 'payments:estados_de_cuenta' %}">
-        Estado de cuenta
-      </a>
-    </li>
-    <li>
-      <a class="dropdown-item" href="{% url 'payments:mis_facturas' %}">
-        Mis facturas
-      </a>
-    </li>
-  </ul>
-</li>
-{% endif %}
-        {% if es_admin %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Gestión</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'accounts:usuarios' %}">Usuarios</a></li>
-            <li><a class="dropdown-item" href="{% url 'destinations:gestion_lista' %}">Destinos</a></li>
-            <li><a class="dropdown-item" href="{% url 'packages:gestion_lista' %}">Paquetes</a></li>
-            <li><a class="dropdown-item" href="{% url 'suppliers:gestion_lista' %}">Proveedores</a></li>
-            <li><a class="dropdown-item" href="{% url 'suppliers:gestion_documentos' %}">Documentos de proveedores</a></li>
-            <li><a class="dropdown-item" href="{% url 'hotels:gestion_lista' %}">Hoteles</a></li>
-            <li><a class="dropdown-item" href="{% url 'flights:gestion_lista' %}">Vuelos</a></li>
-            <li><a class="dropdown-item" href="{% url 'reservations:cronograma_paquetes' %}">Cronogramas</a></li>
-            {% if user.is_superuser %}
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django admin</a></li>
-            {% endif %}
-          </ul>
-        </li>
-        <li class="nav-item dropdown">{# Sprint 3 #}
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Reservas</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'reservations:gestion_lista' %}">Reservas</a></li>
-            <li><a class="dropdown-item" href="{% url 'reservations:clientes' %}">Clientes</a></li>
-            <li><a class="dropdown-item" href="{% url 'reservations:confirmaciones' %}">Confirmaciones de proveedores</a></li>
-          </ul>
-        </li>
-        <li class="nav-item dropdown">{# Sprint 4 #}
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Caja</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'payments:ventanilla' %}">Pago en ventanilla</a></li>
-            <li><a class="dropdown-item" href="{% url 'payments:gestion_pagos' %}">Pagos</a></li>
-            <li><a class="dropdown-item" href="{% url 'payments:cuentas_por_cobrar' %}">Cuentas por cobrar</a></li>
-            <li><a class="dropdown-item" href="{% url 'payments:gestion_facturas' %}">Facturas</a></li>
-            <li><a class="dropdown-item" href="{% url 'payments:reembolsos' %}">Reembolsos</a></li>
-            <li><a class="dropdown-item" href="{% url 'payments:conciliacion' %}">Conciliación</a></li>
-            <li><a class="dropdown-item" href="{% url 'payments:pagos_proveedor' %}">Pagos a proveedores</a></li>
-            <li><a class="dropdown-item" href="{% url 'payments:caja' %}">Cierre de caja</a></li>
-          </ul>
-        </li>
-        {% endif %}
-      </ul>
-      <ul class="navbar-nav">
-        {% if user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:perfil' %}">{{ user.first_name|default:user.username }}</a></li>
-        <li class="nav-item">
-          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
-            <button class="btn btn-link nav-link" type="submit">Cerrar sesión</button>
-          </form>
-        </li>
-        {% else %}
-        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Ingresar</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:registro' %}">Registrarse</a></li>
-        {% endif %}
-      </ul>
+<style>
+/* NAVBAR PRINCIPAL */
+.navbar-est {
+    background: linear-gradient(120deg, #123b78, #1466c3);
+    box-shadow: 0 5px 20px rgba(18,59,120,.15);
+    padding: .85rem 0;
+}
+
+.navbar-est .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: 1.22rem;
+    white-space: nowrap;
+}
+
+/* BOTONES PRINCIPALES */
+.navbar-est .nav-link {
+    color: rgba(255,255,255,.88) !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 12px;
+    padding: 10px 11px !important;
+    font-size: .91rem;
+    transition: background .2s, color .2s;
+    white-space: nowrap;
+}
+
+.navbar-est .navbar-nav {
+    gap: 5px;
+}
+
+.navbar-est .navbar-nav > .nav-item {
+    margin: 0;
+}
+
+.navbar-est .nav-link:hover,
+.navbar-est .nav-link:focus,
+.navbar-est .nav-link.show {
+    background: rgba(255,255,255,.15) !important;
+    color: white !important;
+}
+
+/* MENÚS DESPLEGABLES */
+.navbar-est .dropdown-menu {
+    border: 1px solid #e6edf7;
+    border-radius: 15px;
+    padding: .5rem;
+    box-shadow: 0 16px 36px rgba(18,59,120,.17);
+    min-width: 245px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.navbar-est .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    padding: .65rem .8rem;
+    border-radius: 9px;
+    font-size: .9rem;
+    color: #26364b;
+    white-space: normal;
+}
+
+.navbar-est .dropdown-item i {
+    color: #1767c3;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.navbar-est .dropdown-item:hover {
+    background: #eaf3ff;
+    color: #124f94;
+}
+
+.navbar-est .dropdown-divider {
+    border-color: #e6edf7;
+}
+
+/* ASISTENTE IA */
+.navbar-est .nav-ia {
+    background: rgba(255,255,255,.13);
+}
+
+/* NOTIFICACIONES */
+.navbar-est .nav-notificacion {
+    position: relative;
+}
+
+/* CERRAR SESIÓN */
+.navbar-est .nav-salir {
+    border: 1px solid rgba(255,255,255,.28);
+    background: transparent;
+    font-family: inherit;
+}
+
+/* BOTÓN MÓVIL */
+.navbar-est .navbar-toggler {
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 10px;
+}
+
+@media (max-width: 1199.98px) {
+    .navbar-est .nav-link {
+        font-size: .87rem;
+        padding: 9px 8px !important;
+    }
+
+    .navbar-est .navbar-nav {
+        gap: 4px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .navbar-est .navbar-collapse {
+        padding-top: .85rem;
+    }
+
+    .navbar-est .navbar-nav {
+        gap: 4px;
+    }
+
+    .navbar-est .nav-link {
+        width: 100%;
+        padding: 11px 12px !important;
+    }
+
+    .navbar-est .dropdown-menu {
+        max-height: none;
+        box-shadow: none;
+        border: 0;
+    }
+
+    .navbar-est .nav-salir {
+        width: 100%;
+        text-align: left;
+    }
+}
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-est">
+    <div class="container-fluid px-3 px-xl-4">
+
+        <!-- LOGO -->
+        <a class="navbar-brand fw-bold"
+           href="{% url 'core:home' %}">
+            <i class="bi bi-airplane-engines-fill"></i>
+            Estropical
+        </a>
+
+        <!-- BOTÓN MÓVIL -->
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#menu"
+                aria-controls="menu"
+                aria-expanded="false"
+                aria-label="Mostrar menú">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menu">
+
+            <!-- MENÚ PRINCIPAL -->
+            <ul class="navbar-nav me-auto">
+
+                <!-- EXPLORAR VIAJES -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="bi bi-compass"></i>
+                        Explorar viajes
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'destinations:catalogo' %}">
+                                <i class="bi bi-geo-alt"></i>
+                                Destinos
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'packages:catalogo' %}">
+                                <i class="bi bi-suitcase2"></i>
+                                Paquetes turísticos
+                            </a>
+                        </li>
+
+                        {% url 'hotels:catalogo' as url_hoteles %}
+                        <li>
+                            {% if url_hoteles %}
+                            <a class="dropdown-item"
+                               href="{{ url_hoteles }}">
+                                <i class="bi bi-building"></i>
+                                Hoteles
+                            </a>
+                            {% else %}
+                            <span class="dropdown-item text-muted"
+                                  aria-disabled="true">
+                                <i class="bi bi-building"></i>
+                                Hoteles
+                            </span>
+                            {% endif %}
+                        </li>
+
+                        {% url 'flights:catalogo' as url_vuelos %}
+                        <li>
+                            {% if url_vuelos %}
+                            <a class="dropdown-item"
+                               href="{{ url_vuelos }}">
+                                <i class="bi bi-airplane"></i>
+                                Vuelos
+                            </a>
+                            {% else %}
+                            <span class="dropdown-item text-muted"
+                                  aria-disabled="true">
+                                <i class="bi bi-airplane"></i>
+                                Vuelos
+                            </span>
+                            {% endif %}
+                        </li>
+
+                    </ul>
+                </li>
+
+                <!-- DOCUMENTOS DEL PROVEEDOR -->
+                {% if proveedor_usuario %}
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{% url 'suppliers:mis_documentos' %}">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Mis documentos
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- OPCIONES PARA CLIENTES -->
+                {% if es_cliente %}
+
+                <!-- MIS VIAJES -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="bi bi-luggage"></i>
+                        Mis viajes
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'reservations:mis_reservas' %}">
+                                <i class="bi bi-calendar-check"></i>
+                                Mis reservas
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'preferences:lista' %}">
+                                <i class="bi bi-sliders"></i>
+                                Mis preferencias de viaje
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'recommendations:lista' %}">
+                                <i class="bi bi-stars"></i>
+                                Mis recomendaciones
+                            </a>
+                        </li>
+
+                        <!-- NUEVO: MIS RESEÑAS -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'reviews:mis_resenas' %}">
+                                <i class="bi bi-star-fill"></i>
+                                Mis reseñas
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'support:mis_tickets' %}">
+                                <i class="bi bi-headset"></i>
+                                Mis solicitudes de soporte
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:estados_de_cuenta' %}">
+                                <i class="bi bi-receipt"></i>
+                                Estado de cuenta
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:mis_facturas' %}">
+                                <i class="bi bi-file-earmark-text"></i>
+                                Mis facturas
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+
+                <!-- ASISTENTE IA -->
+                <li class="nav-item">
+                    <a class="nav-link nav-ia"
+                       href="{% url 'recommendations:chatbot' %}">
+                        <i class="bi bi-robot"></i>
+                        Asistente IA
+                    </a>
+                </li>
+
+                <!-- NOTIFICACIONES -->
+                <li class="nav-item">
+                    <a class="nav-link nav-notificacion"
+                       href="{% url 'notifications:lista' %}">
+                        <i class="bi bi-bell"></i>
+                        Notificaciones
+                    </a>
+                </li>
+
+                {% endif %}
+
+                <!-- OPCIONES ADMINISTRATIVAS -->
+                {% if es_admin %}
+
+                <!-- GESTIÓN -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="bi bi-grid"></i>
+                        Gestión
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'accounts:usuarios' %}">
+                                <i class="bi bi-people"></i>
+                                Usuarios
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'destinations:gestion_lista' %}">
+                                <i class="bi bi-geo-alt"></i>
+                                Gestionar destinos
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'packages:gestion_lista' %}">
+                                <i class="bi bi-suitcase2"></i>
+                                Gestionar paquetes
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'suppliers:gestion_lista' %}">
+                                <i class="bi bi-truck"></i>
+                                Proveedores
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'suppliers:gestion_documentos' %}">
+                                <i class="bi bi-folder-check"></i>
+                                Documentos de proveedores
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'hotels:gestion_lista' %}">
+                                <i class="bi bi-building"></i>
+                                Gestionar hoteles
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'flights:gestion_lista' %}">
+                                <i class="bi bi-airplane"></i>
+                                Gestionar vuelos
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'reservations:cronograma_paquetes' %}">
+                                <i class="bi bi-calendar3"></i>
+                                Cronogramas
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'reports:dashboard' %}">
+                                <i class="bi bi-bar-chart"></i>
+                                Reportes administrativos
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'support:gestion' %}">
+                                <i class="bi bi-headset"></i>
+                                Atención al cliente
+                            </a>
+                        </li>
+
+                        <!-- SOLO SUPERUSUARIO -->
+                        {% if user.is_superuser %}
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'admin:index' %}">
+                                <i class="bi bi-gear"></i>
+                                Django admin
+                            </a>
+                        </li>
+                        {% endif %}
+
+                    </ul>
+                </li>
+
+                <!-- RESERVAS ADMINISTRATIVAS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="bi bi-calendar-check"></i>
+                        Reservas
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'reservations:gestion_lista' %}">
+                                <i class="bi bi-calendar-check"></i>
+                                Reservas
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'reservations:clientes' %}">
+                                <i class="bi bi-person-lines-fill"></i>
+                                Clientes
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'reservations:confirmaciones' %}">
+                                <i class="bi bi-check2-circle"></i>
+                                Confirmaciones de proveedores
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+
+                <!-- CAJA -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="bi bi-wallet2"></i>
+                        Caja
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:ventanilla' %}">
+                                <i class="bi bi-cash-coin"></i>
+                                Pago en ventanilla
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:gestion_pagos' %}">
+                                <i class="bi bi-credit-card"></i>
+                                Pagos
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:cuentas_por_cobrar' %}">
+                                <i class="bi bi-wallet2"></i>
+                                Cuentas por cobrar
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:gestion_facturas' %}">
+                                <i class="bi bi-receipt"></i>
+                                Facturas
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:reembolsos' %}">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                Reembolsos
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:conciliacion' %}">
+                                <i class="bi bi-arrow-left-right"></i>
+                                Conciliación
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:pagos_proveedor' %}">
+                                <i class="bi bi-truck"></i>
+                                Pagos a proveedores
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="{% url 'payments:caja' %}">
+                                <i class="bi bi-safe"></i>
+                                Cierre de caja
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+
+                {% endif %}
+
+            </ul>
+
+            <!-- USUARIO Y AUTENTICACIÓN -->
+            <ul class="navbar-nav">
+
+                {% if user.is_authenticated %}
+
+                <!-- PERFIL -->
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{% url 'accounts:perfil' %}">
+                        <i class="bi bi-person-circle"></i>
+                        {{ user.first_name|default:user.username }}
+                    </a>
+                </li>
+
+                <!-- CERRAR SESIÓN -->
+                <li class="nav-item">
+                    <form method="post"
+                          action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+
+                        <button class="btn btn-link nav-link nav-salir"
+                                type="submit">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Cerrar sesión
+                        </button>
+                    </form>
+                </li>
+
+                {% else %}
+
+                <!-- INGRESAR -->
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{% url 'accounts:login' %}">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        Ingresar
+                    </a>
+                </li>
+
+                <!-- REGISTRARSE -->
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{% url 'accounts:registro' %}">
+                        <i class="bi bi-person-plus"></i>
+                        Registrarse
+                    </a>
+                </li>
+
+                {% endif %}
+
+            </ul>
+
+        </div>
     </div>
-  </div>
 </nav>

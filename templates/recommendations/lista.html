@@ -1,0 +1,162 @@
+
+{% extends "base.html" %}
+
+{% block title %}Mis recomendaciones | Estropical{% endblock %}
+
+{% block content %}
+<style>
+.rec-encabezado {
+    background: linear-gradient(120deg, #123b78, #1974cb);
+    color: white;
+    padding: 30px;
+    border-radius: 18px;
+    margin-bottom: 28px;
+}
+.rec-tarjeta {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+}
+.rec-tarjeta:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(20,60,100,.1);
+}
+.rec-icono {
+    width: 48px;
+    height: 48px;
+    background: #eaf3ff;
+    color: #1767c3;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+}
+.rec-dato {
+    padding: 12px 0;
+    border-bottom: 1px solid #edf1f5;
+}
+.rec-dato:last-child {
+    border-bottom: none;
+}
+</style>
+
+<div class="container py-4">
+
+    <div class="rec-encabezado">
+        <div class="small mb-2 opacity-75">
+            ✨ EXPERIENCIA PERSONALIZADA
+        </div>
+        <h1 class="h3 mb-2">
+            Mis recomendaciones de viaje
+        </h1>
+        <p class="mb-0 opacity-75">
+            Encuentra paquetes turísticos que se adapten
+            a tus gustos, presupuesto y estilo de viaje.
+        </p>
+    </div>
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-2 mb-4">
+        <h2 class="h5 mb-0">
+            Tus preferencias de viaje
+        </h2>
+
+        <a href="{% url 'preferences:crear' %}"
+           class="btn btn-outline-primary btn-sm">
+            + Nueva preferencia
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for preferencia in preferencias %}
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card rec-tarjeta h-100">
+                <div class="card-body p-4 d-flex flex-column">
+
+                    <div class="d-flex align-items-center
+                                justify-content-between mb-3">
+                        <div class="rec-icono">✈</div>
+                        <span class="badge bg-light text-primary">
+                            Personalizado
+                        </span>
+                    </div>
+
+                    <h3 class="h5 fw-bold mb-3">
+                        {{ preferencia.nombre }}
+                    </h3>
+
+                    <div class="rec-dato">
+                        <div class="text-muted small">
+                            Tipo de viaje
+                        </div>
+                        <div class="fw-semibold">
+                            {{ preferencia.get_tipo_viaje_display }}
+                        </div>
+                    </div>
+
+                    <div class="rec-dato">
+                        <div class="text-muted small">
+                            Viajeros
+                        </div>
+                        <div class="fw-semibold">
+                            {{ preferencia.cantidad_personas }}
+                            personas
+                        </div>
+                    </div>
+
+                    <div class="rec-dato">
+                        <div class="text-muted small">
+                            Presupuesto
+                        </div>
+                        <div class="fw-semibold">
+                            Bs {{ preferencia.presupuesto_minimo|default:"0" }}
+                            –
+                            {% if preferencia.presupuesto_maximo %}
+                                Bs {{ preferencia.presupuesto_maximo }}
+                            {% else %}
+                                Sin límite
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-auto pt-4">
+                        <a
+                            href="{% url 'recommendations:resultados' preferencia.pk %}"
+                            class="btn btn-primary w-100">
+                            Ver recomendaciones
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {% empty %}
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-5">
+                    <div class="display-5 mb-3">🧳</div>
+                    <h3 class="h5">
+                        Aún no tienes preferencias registradas
+                    </h3>
+                    <p class="text-muted">
+                        Crea una preferencia para recibir
+                        recomendaciones personalizadas.
+                    </p>
+                    <a href="{% url 'preferences:crear' %}"
+                       class="btn btn-primary">
+                        Crear mi primera preferencia
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

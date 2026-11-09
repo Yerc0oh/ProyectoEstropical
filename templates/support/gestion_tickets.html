@@ -1,0 +1,113 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+
+  <h2>Gestión de soporte</h2>
+
+  <p class="text-muted mb-4">
+    Administra las consultas, reclamos y solicitudes de los clientes.
+  </p>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+      <form method="get" class="row g-3 align-items-end">
+
+        <div class="col-md-5">
+          <label class="form-label" for="estado">
+            Filtrar por estado
+          </label>
+
+          <select name="estado"
+                  id="estado"
+                  class="form-select">
+
+            <option value="">Todos los estados</option>
+
+            {% for codigo, nombre in estados %}
+            <option value="{{ codigo }}"
+                    {% if estado_actual == codigo %}selected{% endif %}>
+              {{ nombre }}
+            </option>
+            {% endfor %}
+
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <button type="submit" class="btn btn-primary">
+            Filtrar
+          </button>
+
+          <a href="{% url 'support:gestion' %}"
+             class="btn btn-outline-secondary">
+            Limpiar
+          </a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>N.º</th>
+              <th>Cliente</th>
+              <th>Asunto</th>
+              <th>Categoría</th>
+              <th>Prioridad</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for ticket in tickets %}
+            <tr>
+              <td>#{{ ticket.id }}</td>
+
+              <td>
+                {{ ticket.cliente.get_full_name|default:ticket.cliente.username }}
+              </td>
+
+              <td>{{ ticket.asunto }}</td>
+              <td>{{ ticket.get_categoria_display }}</td>
+              <td>{{ ticket.get_prioridad_display }}</td>
+              <td>{{ ticket.get_estado_display }}</td>
+
+              <td>
+                {{ ticket.fecha_creacion|date:"d/m/Y" }}
+              </td>
+
+              <td>
+                <a href="{% url 'support:gestionar' ticket.pk %}"
+                   class="btn btn-sm btn-outline-primary">
+                  Gestionar
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">
+                No existen solicitudes para este filtro.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

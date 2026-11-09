@@ -1,0 +1,740 @@
+
+{% extends "base.html" %}
+
+{% block title %}Asistente IA | Estropical{% endblock %}
+
+{% block content %}
+
+<style>
+    .estropical-chat {
+        max-width: 1000px;
+        margin: 30px auto;
+        font-family: inherit;
+    }
+
+    .chat-principal {
+        background: #ffffff;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid #e4eaf3;
+        box-shadow: 0 12px 35px rgba(20, 50, 100, 0.09);
+    }
+
+    .chat-cabecera {
+        background: linear-gradient(135deg, #123c85, #2674d9);
+        color: white;
+        padding: 25px 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .chat-avatar {
+        width: 55px;
+        height: 55px;
+        background: rgba(255, 255, 255, 0.18);
+        border-radius: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+
+    .chat-cabecera h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 23px;
+    }
+
+    .chat-cabecera p {
+        margin: 5px 0 0;
+        font-size: 13px;
+        opacity: 0.9;
+    }
+
+    .chat-estado {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+
+    .punto-online {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #64f0aa;
+    }
+
+    #chat-mensajes {
+        height: 480px;
+        overflow-y: auto;
+        padding: 25px;
+        background: #f7f9fd;
+        scroll-behavior: smooth;
+    }
+
+    .chat-fila {
+        display: flex;
+        margin-bottom: 18px;
+    }
+
+    .chat-fila.usuario {
+        justify-content: flex-end;
+    }
+
+    .chat-fila.asistente {
+        justify-content: flex-start;
+    }
+
+    .chat-burbuja {
+        max-width: 82%;
+        padding: 14px 18px;
+        border-radius: 17px;
+        font-size: 14px;
+        line-height: 1.65;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .chat-fila.usuario .chat-burbuja {
+        background: linear-gradient(135deg, #1761c6, #3288ed);
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+
+    .chat-fila.asistente .chat-burbuja {
+        background: white;
+        color: #24334a;
+        border: 1px solid #e6ebf3;
+        border-bottom-left-radius: 5px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.025);
+    }
+
+    .chat-inferior {
+        padding: 18px 22px 20px;
+        border-top: 1px solid #edf0f5;
+        background: white;
+    }
+
+    .sugerencias-titulo {
+        font-size: 12px;
+        color: #728096;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .sugerencias-chat {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .sugerencia-btn {
+        border: 1px solid #dce7f8;
+        background: #f5f9ff;
+        color: #24599f;
+        border-radius: 25px;
+        padding: 8px 13px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .sugerencia-btn:hover {
+        background: #e6f0ff;
+        border-color: #96baf0;
+        transform: translateY(-1px);
+    }
+
+    .chat-formulario {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f7f9fd;
+        border: 1px solid #dfe6f1;
+        border-radius: 15px;
+        padding: 7px;
+    }
+
+    .chat-formulario:focus-within {
+        border-color: #3984e9;
+        box-shadow: 0 0 0 3px rgba(57, 132, 233, 0.08);
+    }
+
+    #pregunta-chat {
+        flex: 1;
+        min-width: 0;
+        border: none;
+        background: transparent;
+        outline: none;
+        padding: 10px 12px;
+        font-size: 14px;
+        color: #24334a;
+    }
+
+    #btn-enviar {
+        border: none;
+        background: #1767d1;
+        color: white;
+        border-radius: 11px;
+        padding: 11px 19px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    #btn-enviar:hover {
+        background: #0e51ae;
+    }
+
+    #btn-enviar:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    #estado-chat {
+        display: none;
+        color: #64748b;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+    .chat-nota {
+        font-size: 11px;
+        color: #94a0b1;
+        text-align: center;
+        margin-top: 12px;
+    }
+
+    .catalogo-bloque {
+        max-width: 94%;
+        margin: 0 0 20px;
+    }
+
+    .catalogo-titulo {
+        font-size: 13px;
+        font-weight: 700;
+        color: #274b81;
+        margin-bottom: 12px;
+    }
+
+    .catalogo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+
+    .catalogo-tarjeta {
+        background: white;
+        border: 1px solid #e1e8f3;
+        border-radius: 15px;
+        padding: 17px;
+        box-shadow: 0 3px 12px rgba(30, 70, 120, 0.04);
+    }
+
+    .catalogo-tipo {
+        display: inline-block;
+        background: #eaf3ff;
+        color: #1761b8;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        text-transform: capitalize;
+    }
+
+    .catalogo-tarjeta h5 {
+        color: #1e3555;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .catalogo-detalle {
+        color: #77859a;
+        font-size: 12px;
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+
+    .catalogo-precio {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1761b8;
+        margin-bottom: 12px;
+    }
+
+    .catalogo-precio small {
+        font-size: 11px;
+        font-weight: 400;
+        color: #7a8797;
+    }
+
+    .catalogo-enlace {
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        background: #1767d1;
+        color: white;
+        padding: 10px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .catalogo-enlace:hover {
+        background: #0f53ae;
+        color: white;
+    }
+
+    @media (max-width: 600px) {
+        .estropical-chat {
+            margin: 10px auto;
+        }
+
+        .chat-cabecera {
+            padding: 20px;
+        }
+
+        .chat-cabecera h3 {
+            font-size: 18px;
+        }
+
+        #chat-mensajes {
+            height: 430px;
+            padding: 15px;
+        }
+
+        .chat-burbuja {
+            max-width: 92%;
+        }
+
+        .chat-inferior {
+            padding: 15px;
+        }
+
+        .catalogo-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container estropical-chat">
+
+    <div class="chat-principal">
+
+        <div class="chat-cabecera">
+            <div class="chat-avatar">✈️</div>
+
+            <div>
+                <h3>Asistente Inteligente Estropical</h3>
+                <p>
+                    Tu próximo viaje comienza aquí.
+                    Descubre destinos, vuelos y hoteles.
+                </p>
+
+                <div class="chat-estado">
+                    <span class="punto-online"></span>
+                    Asistente de viajes
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-mensajes" aria-live="polite">
+
+            <div class="chat-fila asistente">
+                <div class="chat-burbuja">
+¡Hola! 🌴✈️ Soy tu asistente de viajes de Estropical.
+
+Puedo ayudarte a descubrir destinos, encontrar paquetes turísticos, consultar vuelos y explorar hoteles.
+
+¿A dónde te gustaría viajar?
+                </div>
+            </div>
+
+        </div>
+
+        <div class="chat-inferior">
+
+            <div id="estado-chat" role="status">
+                ✨ Estropical está preparando tu respuesta...
+            </div>
+
+            <div class="sugerencias-titulo">
+                ✨ Prueba con una de estas preguntas
+            </div>
+
+            <div class="sugerencias-chat">
+
+                <button
+                    type="button"
+                    class="sugerencia-btn"
+                    data-pregunta="¿Qué paquetes turísticos tienen disponibles?"
+                >
+                    🌴 Paquetes turísticos
+                </button>
+
+                <button
+                    type="button"
+                    class="sugerencia-btn"
+                    data-pregunta="Muéstrame los vuelos disponibles"
+                >
+                    ✈️ Buscar vuelos
+                </button>
+
+                <button
+                    type="button"
+                    class="sugerencia-btn"
+                    data-pregunta="¿Qué hoteles tienen disponibles?"
+                >
+                    🏨 Ver hoteles
+                </button>
+
+                <button
+                    type="button"
+                    class="sugerencia-btn"
+                    data-pregunta="Recomiéndame un destino turístico para mis vacaciones"
+                >
+                    🌎 Recomendar destino
+                </button>
+
+            </div>
+
+            <form id="form-chat">
+                {% csrf_token %}
+
+                <div class="chat-formulario">
+
+                    <input
+                        type="text"
+                        id="pregunta-chat"
+                        placeholder="Escribe tu pregunta sobre viajes..."
+                        maxlength="1000"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <button type="submit" id="btn-enviar">
+                        Enviar ➤
+                    </button>
+
+                </div>
+            </form>
+
+            <div class="chat-nota">
+                Las recomendaciones son orientativas.
+                Los precios y la disponibilidad deben verificarse
+                antes de confirmar una reserva.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formulario = document.getElementById("form-chat");
+    const entrada = document.getElementById("pregunta-chat");
+    const contenedor = document.getElementById("chat-mensajes");
+    const estado = document.getElementById("estado-chat");
+    const boton = document.getElementById("btn-enviar");
+
+    const csrf = document.querySelector(
+        '[name="csrfmiddlewaretoken"]'
+    ).value;
+
+    const urlIA = "{% url 'recommendations:chatbot_consultar' %}";
+    const urlCatalogo = "{% url 'recommendations:catalogo_chat' %}";
+
+    let procesando = false;
+
+    function bajarChat() {
+        contenedor.scrollTop = contenedor.scrollHeight;
+    }
+
+    function agregarMensaje(texto, esUsuario) {
+
+        const fila = document.createElement("div");
+
+        fila.className = esUsuario
+            ? "chat-fila usuario"
+            : "chat-fila asistente";
+
+        const burbuja = document.createElement("div");
+        burbuja.className = "chat-burbuja";
+
+        // No interpretar como HTML el texto de la IA.
+        burbuja.textContent = texto;
+
+        fila.appendChild(burbuja);
+        contenedor.appendChild(fila);
+
+        bajarChat();
+    }
+
+    function crearElemento(etiqueta, clase, texto) {
+
+        const elemento = document.createElement(etiqueta);
+
+        if (clase) {
+            elemento.className = clase;
+        }
+
+        if (texto !== undefined) {
+            elemento.textContent = texto;
+        }
+
+        return elemento;
+    }
+
+    function mostrarCatalogo(opciones) {
+
+        if (!Array.isArray(opciones) || opciones.length === 0) {
+            return;
+        }
+
+        const bloque = crearElemento(
+            "div",
+            "catalogo-bloque"
+        );
+
+        const titulo = crearElemento(
+            "div",
+            "catalogo-titulo",
+            "🔎 Encontré estas opciones en Estropical"
+        );
+
+        bloque.appendChild(titulo);
+
+        const grid = crearElemento(
+            "div",
+            "catalogo-grid"
+        );
+
+        opciones.forEach(function (opcion) {
+
+            const tarjeta = crearElemento(
+                "div",
+                "catalogo-tarjeta"
+            );
+
+            const tipo = crearElemento(
+                "span",
+                "catalogo-tipo",
+                opcion.tipo || "Servicio"
+            );
+
+            const nombre = crearElemento(
+                "h5",
+                "",
+                opcion.titulo || "Opción de viaje"
+            );
+
+            const detalle = crearElemento(
+                "div",
+                "catalogo-detalle",
+                opcion.detalle || ""
+            );
+
+            tarjeta.appendChild(tipo);
+            tarjeta.appendChild(nombre);
+            tarjeta.appendChild(detalle);
+
+            if (
+                opcion.precio !== null &&
+                opcion.precio !== undefined &&
+                opcion.precio !== ""
+            ) {
+
+                const precio = crearElemento(
+                    "div",
+                    "catalogo-precio"
+                );
+
+                precio.textContent = "Bs " + opcion.precio;
+
+                const unidad = crearElemento(
+                    "small",
+                    "",
+                    " " + (opcion.unidad || "")
+                );
+
+                precio.appendChild(unidad);
+                tarjeta.appendChild(precio);
+            }
+
+            const enlace = crearElemento(
+                "a",
+                "catalogo-enlace",
+                "Ver " + (opcion.tipo || "servicio") + " →"
+            );
+
+            // Solo permitir enlaces internos del sitio.
+            if (
+                typeof opcion.url === "string" &&
+                opcion.url.startsWith("/") &&
+                !opcion.url.startsWith("//")
+            ) {
+                enlace.href = opcion.url;
+                tarjeta.appendChild(enlace);
+            }
+
+            grid.appendChild(tarjeta);
+        });
+
+        bloque.appendChild(grid);
+        contenedor.appendChild(bloque);
+
+        bajarChat();
+    }
+
+    async function consultarIA(pregunta) {
+
+        const respuesta = await fetch(urlIA, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrf
+            },
+            body: JSON.stringify({
+                pregunta: pregunta
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(
+                datos.error || "No se pudo consultar la IA."
+            );
+        }
+
+        return datos;
+    }
+
+    async function consultarCatalogo(pregunta) {
+
+        const respuesta = await fetch(urlCatalogo, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrf
+            },
+            body: JSON.stringify({
+                pregunta: pregunta
+            })
+        });
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudo consultar el catálogo.");
+        }
+
+        return await respuesta.json();
+    }
+
+    async function enviarPregunta(pregunta) {
+
+        if (procesando) {
+            return;
+        }
+
+        pregunta = pregunta.trim();
+
+        if (!pregunta) {
+            return;
+        }
+
+        procesando = true;
+        boton.disabled = true;
+        entrada.disabled = true;
+
+        estado.style.display = "block";
+
+        agregarMensaje(pregunta, true);
+        entrada.value = "";
+
+        // Ambas consultas empiezan en paralelo.
+        // La respuesta de IA no espera al catálogo.
+
+        const tareaIA = consultarIA(pregunta)
+            .then(function (datos) {
+
+                agregarMensaje(
+                    datos.respuesta ||
+                    "No recibí una respuesta del asistente.",
+                    false
+                );
+
+            })
+            .catch(function (error) {
+
+                agregarMensaje(
+                    "No pude obtener la respuesta de la IA. " +
+                    error.message,
+                    false
+                );
+
+            });
+
+        const tareaCatalogo = consultarCatalogo(pregunta)
+            .then(function (datos) {
+
+                mostrarCatalogo(datos.opciones || []);
+
+            })
+            .catch(function (error) {
+
+                console.warn(
+                    "Consulta del catálogo:",
+                    error.message
+                );
+
+            });
+
+        try {
+            await Promise.allSettled([
+                tareaIA,
+                tareaCatalogo
+            ]);
+        } finally {
+
+            procesando = false;
+            boton.disabled = false;
+            entrada.disabled = false;
+
+            estado.style.display = "none";
+            entrada.focus();
+        }
+    }
+
+    formulario.addEventListener("submit", function (evento) {
+
+        evento.preventDefault();
+
+        enviarPregunta(entrada.value);
+    });
+
+    document.querySelectorAll(".sugerencia-btn")
+        .forEach(function (sugerencia) {
+
+            sugerencia.addEventListener("click", function () {
+
+                const pregunta = this.dataset.pregunta;
+
+                if (pregunta && !procesando) {
+                    enviarPregunta(pregunta);
+                }
+            });
+        });
+
+});
+</script>
+
+{% endblock %}

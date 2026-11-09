@@ -29,4 +29,18 @@ urlpatterns = [  # Solo Administrador (CU-14)
          views.TarifaHabitacionEditar.as_view(), name="gestion_tarifa_editar"),
     path("gestion/hoteles/<int:hotel_pk>/habitaciones/<int:tipo_pk>/tarifas/<int:pk>/eliminar/",
          views.TarifaHabitacionEliminar.as_view(), name="gestion_tarifa_eliminar"),
+
+     
+     # Catálogo de hoteles para clientes y visitantes
+     path(
+     "hoteles/",
+     views.HotelCatalogo.as_view(),
+     name="catalogo"
+     ),
+     path(
+     "hoteles/<int:pk>/",
+     views.HotelDetalle.as_view(),
+     name="detalle"
+     ),
+
 ]

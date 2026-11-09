@@ -66,12 +66,20 @@ class CatalogoPaquetesView(ListView):          # CU-09
         return ctx
 
 
-class DetallePaqueteView(DetailView):          # CU-11
+
+class DetallePaqueteView(DetailView):
     template_name = "packages/paquete_detail.html"
     context_object_name = "paquete"
 
     def get_queryset(self):
-        return _publicados().prefetch_related("actividades", "paqueteservicio_set__servicio")
+        return _publicados().prefetch_related(
+            "actividades",
+            "paqueteservicio_set__servicio",
+            "paquetehotel_set__tipo_habitacion__hotel",
+            "paquetevuelo_set__vuelo__origen",
+            "paquetevuelo_set__vuelo__destino",
+            "paquetevuelo_set__vuelo__proveedor",
+        )
 
 
 MAX_PAQUETES_COMPARAR = 3

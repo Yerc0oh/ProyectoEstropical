@@ -1,16 +1,1099 @@
-/* Paleta Estropical: azul y celeste pálido. TODO: refinar con el diseño final. */
+/* ==========================================================
+   ESTROPICAL - TROPICAL TOURS
+   DISEÑO GLOBAL RESPONSIVO
+   ========================================================== */
+
+/* ----------------------------------------------------------
+   1. VARIABLES Y COLORES
+   ---------------------------------------------------------- */
+
 :root {
-  --est-azul: #0b5394;
-  --est-azul-oscuro: #073763;
-  --est-celeste: #e8f4fd;
-  --est-celeste-borde: #b9dcf5;
-  --bs-primary: var(--est-azul);
-  --bs-primary-rgb: 11, 83, 148;
+  --est-primary: #087e96;
+  --est-primary-dark: #075b70;
+  --est-primary-light: #e2f5f6;
+
+  --est-navy: #073b54;
+  --est-navy-dark: #052d41;
+
+  --est-text: #193448;
+  --est-muted: #65798a;
+
+  --est-background: #f5f9fb;
+  --est-white: #ffffff;
+
+  --est-border: #e0ebf0;
+
+  --est-shadow:
+    0 10px 30px rgba(7, 59, 84, 0.07);
+
+  --est-shadow-hover:
+    0 18px 40px rgba(7, 59, 84, 0.13);
+
+  --est-radius: 16px;
+
+  --bs-primary: #087e96;
+  --bs-primary-rgb: 8, 126, 150;
+
+  /* Compatibilidad con estilos anteriores */
+  --est-azul: #087e96;
+  --est-azul-oscuro: #075b70;
+  --est-celeste: #f5f9fb;
+  --est-celeste-borde: #e0ebf0;
 }
-body { background-color: var(--est-celeste); min-height: 100vh; display: flex; flex-direction: column; }
-main { flex: 1; }
-.navbar-est { background-color: var(--est-azul); }
-.btn-primary { --bs-btn-bg: var(--est-azul); --bs-btn-border-color: var(--est-azul);
-  --bs-btn-hover-bg: var(--est-azul-oscuro); --bs-btn-hover-border-color: var(--est-azul-oscuro); }
-.card { border-color: var(--est-celeste-borde); }
-footer { background-color: var(--est-azul-oscuro); color: #fff; }
+
+
+/* ----------------------------------------------------------
+   2. ESTILOS GENERALES
+   ---------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--est-background);
+  color: var(--est-text);
+
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+
+  overflow-x: hidden;
+}
+
+main {
+  flex: 1;
+  min-width: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Outfit", "DM Sans", sans-serif;
+  font-weight: 700;
+  color: var(--est-navy);
+}
+
+a {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: #b7e8ed;
+  color: #073b54;
+}
+
+
+/* ----------------------------------------------------------
+   3. BARRA DE NAVEGACIÓN
+   ---------------------------------------------------------- */
+
+.navbar-est {
+  background: var(--est-navy);
+  padding: 0.85rem 0;
+
+  position: relative;
+  z-index: 1050;
+
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.09);
+}
+
+.navbar-est .navbar-brand {
+  font-family: "Outfit", sans-serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+
+  color: #ffffff;
+  letter-spacing: -0.6px;
+}
+
+.navbar-est .navbar-brand:hover {
+  color: #b8f0f2;
+}
+
+.navbar-est .nav-link {
+  color: rgba(255, 255, 255, 0.86);
+
+  font-size: 0.92rem;
+  font-weight: 600;
+
+  padding: 0.65rem 0.75rem;
+  border-radius: 9px;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.navbar-est .nav-link:hover,
+.navbar-est .nav-link:focus {
+  background: rgba(255, 255, 255, 0.11);
+  color: #ffffff;
+}
+
+.navbar-est .nav-link.active {
+  color: #ffffff;
+}
+
+.navbar-est .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
+}
+
+.navbar-est .navbar-toggler:focus {
+  box-shadow: 0 0 0 3px rgba(133, 222, 230, 0.35);
+}
+
+.navbar-est .dropdown-menu {
+  background: #ffffff;
+
+  border: 1px solid var(--est-border);
+  border-radius: 15px;
+
+  padding: 0.55rem;
+
+  box-shadow:
+    0 18px 45px rgba(5, 45, 65, 0.16);
+
+  min-width: 230px;
+}
+
+.navbar-est .dropdown-item {
+  color: var(--est-text);
+
+  font-size: 0.91rem;
+  font-weight: 500;
+
+  padding: 0.7rem 0.85rem;
+  border-radius: 9px;
+
+  white-space: normal;
+}
+
+.navbar-est .dropdown-item:hover,
+.navbar-est .dropdown-item:focus {
+  background: #e8f7f9;
+  color: var(--est-primary-dark);
+}
+
+.navbar-est .dropdown-divider {
+  border-color: var(--est-border);
+  margin: 0.5rem 0;
+}
+
+.navbar-est .btn-link.nav-link {
+  text-decoration: none;
+}
+
+
+/* ----------------------------------------------------------
+   4. BOTONES
+   ---------------------------------------------------------- */
+
+.btn {
+  font-weight: 600;
+  border-radius: 10px;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #087e96;
+  --bs-btn-border-color: #087e96;
+
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #075b70;
+  --bs-btn-hover-border-color: #075b70;
+
+  --bs-btn-active-bg: #075b70;
+  --bs-btn-active-border-color: #075b70;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #087e96;
+  --bs-btn-border-color: #087e96;
+
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #087e96;
+  --bs-btn-hover-border-color: #087e96;
+
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #075b70;
+  --bs-btn-active-border-color: #075b70;
+}
+
+.btn-outline-secondary {
+  border-color: #b9cbd5;
+}
+
+.btn-lg {
+  padding: 0.85rem 1.4rem;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+}
+
+
+/* ----------------------------------------------------------
+   5. TARJETAS
+   ---------------------------------------------------------- */
+
+.card {
+  background: #ffffff;
+
+  border: 1px solid var(--est-border);
+  border-radius: var(--est-radius);
+
+  box-shadow: var(--est-shadow);
+
+  overflow-wrap: anywhere;
+}
+
+.card-header {
+  background: #ffffff;
+
+  border-bottom: 1px solid var(--est-border);
+
+  padding: 1rem 1.25rem;
+  font-weight: 700;
+}
+
+.card-body {
+  padding: 1.4rem;
+}
+
+.card-footer {
+  background: #ffffff;
+  border-top: 1px solid var(--est-border);
+}
+
+.card-title {
+  color: var(--est-navy);
+  font-weight: 700;
+}
+
+
+/* ----------------------------------------------------------
+   6. FORMULARIOS
+   ---------------------------------------------------------- */
+
+.form-label {
+  color: var(--est-text);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+  border: 1px solid #d5e3e9;
+  border-radius: 10px;
+
+  padding: 0.7rem 0.9rem;
+
+  color: var(--est-text);
+  background-color: #ffffff;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--est-primary);
+
+  box-shadow:
+    0 0 0 0.2rem rgba(8, 126, 150, 0.13);
+}
+
+.form-control::placeholder {
+  color: #91a2ad;
+}
+
+textarea.form-control {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.form-check-input:checked {
+  background-color: var(--est-primary);
+  border-color: var(--est-primary);
+}
+
+.form-text {
+  color: var(--est-muted);
+}
+
+
+/* ----------------------------------------------------------
+   7. TABLAS ADMINISTRATIVAS
+   ---------------------------------------------------------- */
+
+.table-responsive {
+  border-radius: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  --bs-table-bg: transparent;
+
+  margin-bottom: 0;
+  color: var(--est-text);
+}
+
+.table thead th {
+  background: #eaf3f7;
+
+  color: var(--est-navy);
+  font-weight: 700;
+  font-size: 0.88rem;
+
+  border-bottom: 0;
+
+  padding: 0.95rem;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  padding: 0.95rem;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background: rgba(8, 126, 150, 0.035);
+}
+
+.table a {
+  font-weight: 600;
+}
+
+
+/* ----------------------------------------------------------
+   8. ALERTAS, BADGES Y NAVEGACIÓN
+   ---------------------------------------------------------- */
+
+.alert {
+  border-radius: 12px;
+  border-width: 1px;
+}
+
+.badge {
+  font-weight: 600;
+  padding: 0.5em 0.75em;
+  border-radius: 7px;
+}
+
+.pagination .page-link {
+  color: var(--est-primary-dark);
+  border-color: var(--est-border);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--est-primary);
+  border-color: var(--est-primary);
+  color: #ffffff;
+}
+
+.breadcrumb {
+  font-size: 0.9rem;
+}
+
+.breadcrumb a {
+  color: var(--est-primary);
+}
+
+
+/* ----------------------------------------------------------
+   9. PÁGINA DE INICIO
+   ---------------------------------------------------------- */
+
+.main-home {
+  width: 100%;
+  max-width: none;
+
+  padding: 0;
+  margin: 0;
+
+  background: #ffffff;
+}
+
+
+/* ----------------------------------------------------------
+   10. CARRUSEL PRINCIPAL
+   ---------------------------------------------------------- */
+
+.est-carousel,
+.est-carousel .carousel-inner,
+.est-carousel .carousel-item {
+  height: min(76vh, 700px);
+  min-height: 490px;
+}
+
+.est-carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #073b54;
+}
+
+.est-carousel .carousel-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.est-carousel .carousel-item>img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+}
+
+.est-carousel .carousel-item::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(90deg,
+      rgba(3, 28, 45, 0.82) 0%,
+      rgba(3, 28, 45, 0.5) 48%,
+      rgba(3, 28, 45, 0.15) 100%);
+
+  pointer-events: none;
+}
+
+.est-carousel .carousel-caption {
+  position: absolute;
+  z-index: 2;
+
+  top: 50%;
+  bottom: auto;
+
+  left: max(7%, calc((100vw - 1140px) / 2));
+  right: 12%;
+
+  transform: translateY(-50%);
+
+  max-width: 700px;
+  text-align: left;
+}
+
+.est-carousel .carousel-caption h1,
+.est-carousel .carousel-caption h2 {
+  font-family: "Outfit", sans-serif;
+
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 800;
+  line-height: 1.08;
+
+  letter-spacing: -1.5px;
+
+  color: #ffffff;
+  margin: 16px 0 22px;
+}
+
+.est-carousel .carousel-caption p {
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+
+  color: #f1f7fa;
+
+  max-width: 570px;
+  margin-bottom: 30px;
+}
+
+.est-kicker {
+  display: inline-block;
+
+  padding: 9px 16px;
+
+  background: rgba(255, 255, 255, 0.18);
+
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50px;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+
+  color: #ffffff;
+}
+
+.est-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  background: #ffffff;
+  color: #073b54;
+
+  padding: 14px 28px;
+
+  border: 2px solid #ffffff;
+  border-radius: 50px;
+
+  font-weight: 700;
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.est-hero-btn:hover {
+  background: #d8f6f5;
+  color: #073b54;
+  transform: translateY(-2px);
+}
+
+.est-carousel .carousel-indicators {
+  z-index: 3;
+  bottom: 22px;
+}
+
+.est-carousel .carousel-indicators button {
+  width: 30px;
+  height: 4px;
+
+  border-radius: 4px;
+}
+
+.est-carousel .carousel-control-prev,
+.est-carousel .carousel-control-next {
+  z-index: 3;
+  width: 6%;
+}
+
+
+/* ----------------------------------------------------------
+   11. SECCIONES DE INICIO
+   ---------------------------------------------------------- */
+
+.est-section {
+  padding: 85px 0;
+}
+
+.est-section-alt {
+  background: #f1f8fa;
+}
+
+.est-section-label {
+  color: #087e96;
+
+  font-size: 0.8rem;
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+
+  margin-bottom: 12px;
+}
+
+.est-section-title {
+  color: #073b54;
+
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  font-weight: 800;
+
+  margin-bottom: 15px;
+}
+
+.est-section-subtitle {
+  color: #617789;
+
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+
+/* ----------------------------------------------------------
+   12. TARJETAS DE DESTINOS
+   ---------------------------------------------------------- */
+
+.est-destination-card {
+  position: relative;
+
+  display: block;
+  height: 390px;
+
+  overflow: hidden;
+  border-radius: 22px;
+
+  background: #dbe9ee;
+
+  text-decoration: none;
+
+  box-shadow:
+    0 12px 30px rgba(6, 53, 75, 0.12);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.est-destination-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--est-shadow-hover);
+}
+
+.est-destination-card img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+
+  transition: transform 0.4s ease;
+}
+
+.est-destination-card:hover img {
+  transform: scale(1.05);
+}
+
+.est-destination-card::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(to top,
+      rgba(0, 24, 40, 0.87),
+      rgba(0, 24, 40, 0.02) 70%);
+
+  pointer-events: none;
+}
+
+.est-destination-info {
+  position: absolute;
+  z-index: 1;
+
+  left: 26px;
+  right: 26px;
+  bottom: 25px;
+
+  color: #ffffff;
+}
+
+.est-destination-info small {
+  color: #b2f3f2;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.est-destination-info h3 {
+  color: #ffffff;
+
+  font-size: 1.8rem;
+  font-weight: 800;
+
+  margin: 8px 0;
+}
+
+.est-destination-info span {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+
+
+/* ----------------------------------------------------------
+   13. TARJETAS DE BENEFICIOS
+   ---------------------------------------------------------- */
+
+.est-benefit {
+  height: 100%;
+
+  background: #ffffff;
+
+  padding: 32px;
+
+  border: 1px solid var(--est-border);
+  border-radius: 20px;
+
+  box-shadow:
+    0 10px 25px rgba(6, 53, 75, 0.05);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.est-benefit:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--est-shadow-hover);
+}
+
+.est-benefit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 58px;
+  height: 58px;
+
+  background: #e2f5f6;
+  color: #087e96;
+
+  border-radius: 17px;
+
+  font-size: 1.65rem;
+
+  margin-bottom: 22px;
+}
+
+.est-benefit h3 {
+  color: #073b54;
+
+  font-size: 1.3rem;
+  font-weight: 700;
+
+  margin-bottom: 12px;
+}
+
+.est-benefit p {
+  color: #617789;
+  margin-bottom: 0;
+}
+
+
+/* ----------------------------------------------------------
+   14. LLAMADO A LA ACCIÓN
+   ---------------------------------------------------------- */
+
+.est-cta {
+  background: linear-gradient(125deg,
+      #087e96,
+      #073b54);
+
+  color: #ffffff;
+
+  border-radius: 28px;
+  padding: 65px 30px;
+
+  text-align: center;
+}
+
+.est-cta h2 {
+  color: #ffffff;
+
+  font-weight: 800;
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.est-cta p {
+  color: #e3f2f5;
+
+  margin: 18px auto 28px;
+  max-width: 600px;
+}
+
+
+/* ----------------------------------------------------------
+   15. FOOTER
+   ---------------------------------------------------------- */
+
+.footer-est {
+  background: #052d41;
+  color: #ffffff;
+
+  padding: 55px 0 22px;
+}
+
+.footer-brand {
+  color: #ffffff;
+
+  font-size: 1.6rem;
+  font-weight: 800;
+
+  margin-bottom: 16px;
+}
+
+.footer-description {
+  color: #b9cbd5;
+
+  max-width: 370px;
+  font-size: 0.92rem;
+}
+
+.footer-heading {
+  color: #ffffff;
+
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+.footer-est a {
+  display: block;
+
+  color: #b9cbd5;
+
+  margin-bottom: 12px;
+  font-size: 0.92rem;
+}
+
+.footer-est a:hover {
+  color: #ffffff;
+}
+
+.footer-small {
+  color: #b9cbd5;
+  font-size: 0.85rem;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+  margin-top: 35px;
+  padding-top: 22px;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+
+  color: #a4bdca;
+  font-size: 0.82rem;
+}
+
+
+/* ----------------------------------------------------------
+   16. RESPONSIVE - PANTALLAS MEDIANAS
+   ---------------------------------------------------------- */
+
+@media (max-width: 991.98px) {
+
+  .navbar-est .navbar-collapse {
+    padding-top: 15px;
+  }
+
+  .navbar-est .dropdown-menu {
+    box-shadow: none;
+    border-radius: 10px;
+  }
+
+  .navbar-est .nav-link {
+    padding: 0.7rem 0.8rem;
+  }
+
+  .est-carousel .carousel-caption {
+    left: 9%;
+    right: 9%;
+  }
+
+  .est-section {
+    padding: 65px 0;
+  }
+
+  .est-destination-card {
+    height: 360px;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   17. RESPONSIVE - CELULARES
+   ---------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+
+  .navbar-est .navbar-brand {
+    font-size: 1.4rem;
+  }
+
+  .est-carousel,
+  .est-carousel .carousel-inner,
+  .est-carousel .carousel-item {
+    height: 620px;
+    min-height: 620px;
+  }
+
+  .est-carousel .carousel-caption {
+    left: 8%;
+    right: 8%;
+
+    max-width: none;
+  }
+
+  .est-carousel .carousel-caption h1,
+  .est-carousel .carousel-caption h2 {
+    font-size: clamp(2.25rem, 9vw, 3.5rem);
+    letter-spacing: -1px;
+  }
+
+  .est-carousel .carousel-caption p {
+    font-size: 1rem;
+  }
+
+  .est-carousel .carousel-item::after {
+    background: rgba(3, 28, 45, 0.65);
+  }
+
+  .est-carousel .carousel-control-prev,
+  .est-carousel .carousel-control-next {
+    width: 8%;
+  }
+
+  .est-section {
+    padding: 55px 0;
+  }
+
+  .est-destination-card {
+    height: 340px;
+  }
+
+  .est-benefit {
+    padding: 28px 24px;
+  }
+
+  .est-cta {
+    border-radius: 20px;
+    padding: 48px 22px;
+  }
+
+  .footer-est {
+    padding-top: 40px;
+  }
+
+  @media (max-width: 767.98px) {
+    .footer-bottom {
+      align-items: flex-end;
+      text-align: right;
+    }
+  }
+
+  .card-body {
+    padding: 1.1rem;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   18. CELULARES PEQUEÑOS
+   ---------------------------------------------------------- */
+
+@media (max-width: 390px) {
+
+  .est-carousel .carousel-caption h1,
+  .est-carousel .carousel-caption h2 {
+    font-size: 2.1rem;
+  }
+
+  .est-carousel .carousel-caption {
+    left: 9%;
+    right: 9%;
+  }
+
+  .est-kicker {
+    font-size: 0.7rem;
+    padding: 7px 12px;
+  }
+
+  .est-hero-btn {
+    padding: 12px 20px;
+    font-size: 0.92rem;
+  }
+
+  .est-destination-card {
+    height: 310px;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   19. ACCESIBILIDAD
+   ---------------------------------------------------------- */
+
+:focus-visible {
+  outline: 3px solid #24b9cc;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+}
+
+
+/* ==========================================
+   IMÁGENES UNIFORMES DE DESTINOS
+   ========================================== */
+
+.destino-imagen {
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  border-radius: 12px;
+}
+
+/* Imágenes de la página de detalle */
+.destino-imagen-detalle {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  border-radius: 16px;
+}
+
+/* Adaptación para celulares */
+@media (max-width: 768px) {
+  .destino-imagen {
+    height: 200px;
+  }
+
+  .destino-imagen-detalle {
+    height: 260px;
+  }
+}

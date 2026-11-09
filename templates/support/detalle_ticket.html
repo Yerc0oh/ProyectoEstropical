@@ -1,0 +1,123 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="mb-3">
+    {% if es_gestion %}
+      <a href="{% url 'support:gestion' %}"
+         class="btn btn-outline-secondary btn-sm">
+        Volver a gestión
+      </a>
+    {% else %}
+      <a href="{% url 'support:mis_tickets' %}"
+         class="btn btn-outline-secondary btn-sm">
+        Volver a mis solicitudes
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between flex-wrap gap-2">
+        <h2>Ticket #{{ ticket.id }}</h2>
+        <span class="badge bg-primary">
+          {{ ticket.get_estado_display }}
+        </span>
+      </div>
+
+      <h5>{{ ticket.asunto }}</h5>
+
+      <p class="text-muted">
+        Categoría: {{ ticket.get_categoria_display }}
+        |
+        Prioridad: {{ ticket.get_prioridad_display }}
+      </p>
+
+      <p class="text-muted">
+        Registrado:
+        {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}
+      </p>
+
+      <hr>
+
+      <h5>Descripción de la solicitud</h5>
+      <p style="white-space: pre-wrap;">{{ ticket.descripcion }}</p>
+
+    </div>
+  </div>
+
+  <h4 class="mb-3">Historial de atención</h4>
+
+  {% for respuesta in respuestas %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between flex-wrap gap-2">
+        <strong>{{ respuesta.autor.get_full_name|default:respuesta.autor.username }}</strong>
+        <small class="text-muted">
+          {{ respuesta.fecha_creacion|date:"d/m/Y H:i" }}
+        </small>
+      </div>
+
+      <hr>
+
+      <p style="white-space: pre-wrap;">{{ respuesta.mensaje }}</p>
+
+    </div>
+  </div>
+  {% empty %}
+  <div class="alert alert-info">
+    Esta solicitud todavía no tiene respuestas.
+  </div>
+  {% endfor %}
+
+  {% if es_gestion %}
+  <div class="card shadow-sm mt-4">
+    <div class="card-body">
+
+      <h4 class="mb-3">Gestionar solicitud</h4>
+
+      <form method="post">
+        {% csrf_token %}
+
+        {{ formulario.non_field_errors }}
+        {{ respuesta_form.non_field_errors }}
+
+        {% for campo in formulario %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ campo.id_for_label }}">
+            {{ campo.label }}
+          </label>
+          {{ campo }}
+          <div class="text-danger small">
+            {{ campo.errors }}
+          </div>
+        </div>
+        {% endfor %}
+
+        {% for campo in respuesta_form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ campo.id_for_label }}">
+            {{ campo.label }}
+          </label>
+          {{ campo }}
+          <div class="text-danger small">
+            {{ campo.errors }}
+          </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">
+          Guardar y responder
+        </button>
+      </form>
+
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

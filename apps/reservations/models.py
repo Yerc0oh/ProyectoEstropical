@@ -255,3 +255,72 @@ class ConfirmacionProveedor(models.Model):
 
     def __str__(self):
         return f"{self.reserva} - {self.concepto}"
+
+
+class AsignacionHabitacion(models.Model):
+    """
+    Habitaciones asignadas a una reserva de paquete.
+
+    Las fechas usan el intervalo:
+    [fecha_entrada, fecha_salida)
+
+    Por ejemplo, del 10 al 13 ocupa las noches
+    del 10, 11 y 12.
+    """
+
+    reserva = models.ForeignKey(
+        "reservations.Reserva",
+        on_delete=models.PROTECT,
+        related_name="asignaciones_hotel"
+    )
+
+    tipo_habitacion = models.ForeignKey(
+        "hotels.TipoHabitacion",
+        on_delete=models.PROTECT,
+        related_name="asignaciones_reserva"
+    )
+
+    fecha_entrada = models.DateField()
+
+    fecha_salida = models.DateField()
+
+    cantidad_habitaciones = models.PositiveIntegerField()
+
+    class Meta:
+        db_table = "asignacion_habitacion"
+
+        verbose_name = "asignación de habitación"
+        verbose_name_plural = "asignaciones de habitaciones"
+
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(
+                    fecha_salida__gt=models.F("fecha_entrada")
+                ),
+                name="ck_asignacion_fechas"
+            ),
+
+            models.CheckConstraint(
+                condition=models.Q(
+                    cantidad_habitaciones__gte=1
+                ),
+                name="ck_asignacion_cantidad"
+            ),
+
+            models.UniqueConstraint(
+                fields=[
+                    "reserva",
+                    "tipo_habitacion",
+                    "fecha_entrada",
+                    "fecha_salida"
+                ],
+                name="uq_asignacion_reserva_hotel"
+            )
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.reserva.codigo} - "
+            f"{self.tipo_habitacion} - "
+            f"{self.cantidad_habitaciones} habitación(es)"
+        )
