@@ -65,5 +65,5 @@ class ProveedorDocumento(models.Model):
     def __str__(self):
         return f"{self.tipo_documento} - {self.proveedor}"
 
-# TODO CU-17 (Confirmar servicios reservados): el modelo ConfirmacionProveedor depende de
-# Reserva, por lo que se crea en el Sprint 3 (tabla confirmacion_proveedor del schema.sql).
+# CU-17 (Confirmar servicios reservados): el modelo ConfirmacionProveedor depende de Reserva,
+# por eso vive en apps/reservations/models.py (tabla confirmacion_proveedor del schema.sql).

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Respuesta del proveedor{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">Respuesta del proveedor</h1>
+  <p class="text-muted">{{ conf.proveedor }} · {{ conf.concepto }} · Reserva {{ conf.reserva.codigo }}</p>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" href="{% url 'reservations:confirmaciones' %}">Volver</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

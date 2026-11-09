@@ -10,5 +10,22 @@
 <h2 class="h5">Itinerario</h2>
 <ul>{% for a in paquete.actividades.all %}<li>Día {{ a.dia }}: {{ a.titulo }}</li>{% empty %}<li class="text-muted">—</li>{% endfor %}</ul>
 <h2 class="h5">Condiciones</h2><p>{{ paquete.condiciones|linebreaksbr }}</p>
-<!-- TODO Sprint 3: botón "Reservar" (solo Cliente; sin cuenta -> pedir iniciar sesión) -->
+{# Sprint 3 - CU-18: botón "Reservar" (Cliente o Administrador; sin cuenta -> iniciar sesión) #}
+<div class="card mt-4"><div class="card-body">
+{% if paquete.cupos_disponibles > 0 %}
+  {% if es_cliente or es_admin %}
+  <form class="row g-2 align-items-end" method="get" action="{% url 'reservations:reservar' paquete.pk %}">
+    <div class="col-auto"><label class="form-label" for="n-pasajeros">Pasajeros</label>
+      <input class="form-control" id="n-pasajeros" type="number" name="pasajeros" value="1" min="1" max="{{ paquete.cupos_disponibles|stringformat:'d' }}"></div>
+    <div class="col-auto"><button class="btn btn-primary">Reservar</button></div>
+  </form>
+  {% elif user.is_authenticated %}
+  <p class="mb-0 text-muted">Tu cuenta no tiene el rol de cliente para reservar.</p>
+  {% else %}
+  <a class="btn btn-primary" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Inicia sesión para reservar</a>
+  {% endif %}
+{% else %}
+  <p class="mb-0 fw-bold text-danger">Sin cupos disponibles.</p>
+{% endif %}
+</div></div>
 {% endblock %}

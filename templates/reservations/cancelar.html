@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Cancelar {{ reserva.codigo }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-7"><div class="card"><div class="card-body">
+  <h1 class="h4">Cancelar reserva {{ reserva.codigo }}</h1>
+  <p class="text-muted">{{ reserva.paquete.nombre }} · sale el {{ reserva.paquete.fecha_salida|date:"d/m/Y" }} (faltan {{ calculo.dias }} días)</p>
+  <table class="table table-sm">
+    <tr><th>Total de la reserva</th><td class="text-end">Bs {{ reserva.total }}</td></tr>
+    <tr><th>Pagado hasta hoy</th><td class="text-end">Bs {{ calculo.pagado }}</td></tr>
+    <tr><th>Penalidad ({{ calculo.porcentaje }}% del total)</th><td class="text-end text-danger">Bs {{ calculo.penalidad }}</td></tr>
+    <tr class="table-light"><th>Monto a reembolsar</th><td class="text-end fw-bold">Bs {{ calculo.reembolsable }}</td></tr>
+  </table>
+  <p class="small text-muted">Penalidad según días antes de la salida: 30 o más → 10%, 15 a 29 → 30%, 7 a 14 → 50%, menos de 7 → 100%
+    (porcentajes configurables). Nunca se retiene más de lo pagado. El reembolso queda pendiente hasta que la agencia lo procese.</p>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-danger">Cancelar reserva</button>
+    <a class="btn btn-link" href="{% url 'reservations:detalle' reserva.pk %}">Volver</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

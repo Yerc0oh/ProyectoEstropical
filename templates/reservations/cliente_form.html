@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-3">{{ titulo }}</h1>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" href="{% url 'reservations:clientes' %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

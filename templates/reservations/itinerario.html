@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Itinerario {{ reserva.codigo }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div><h1 class="h3 mb-0">Itinerario de viaje</h1>
+    <p class="text-muted mb-0">{{ paquete.nombre }} · Reserva {{ reserva.codigo }}</p></div>
+  <a class="btn btn-primary" href="{% url 'reservations:itinerario_pdf' reserva.pk %}">Descargar PDF</a>
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    {% for d in dias %}
+    <div class="card mb-2"><div class="card-body py-2">
+      <h2 class="h6 mb-1">Día {{ d.numero }} · {{ d.fecha|date:"l d/m/Y" }}</h2>
+      <ul class="list-unstyled mb-0 small">
+        {% for pv in d.vuelos %}<li>✈ {{ pv.vuelo.fecha_salida|time:"H:i" }} Vuelo {{ pv.vuelo.numero_vuelo }} {{ pv.vuelo.origen.nombre }} → {{ pv.vuelo.destino.nombre }}</li>{% endfor %}
+        {% for a in d.actividades %}<li>{% if a.hora_inicio %}{{ a.hora_inicio|time:"H:i" }} {% endif %}<b>{{ a.titulo }}</b>{% if a.descripcion %} — {{ a.descripcion }}{% endif %}</li>{% endfor %}
+        {% if not d.vuelos and not d.actividades %}<li class="text-muted">Día libre</li>{% endif %}
+      </ul>
+    </div></div>
+    {% endfor %}
+  </div>
+  <div class="col-lg-4">
+    <div class="card mb-3"><div class="card-body"><h2 class="h6">Vuelos</h2>
+      <ul class="small mb-0">{% for pv in vuelos %}<li>{{ pv.vuelo }} · {{ pv.vuelo.fecha_salida|date:"d/m H:i" }} ({{ pv.get_tramo_display }})</li>{% empty %}<li class="text-muted">—</li>{% endfor %}</ul></div></div>
+    <div class="card mb-3"><div class="card-body"><h2 class="h6">Alojamiento</h2>
+      <ul class="small mb-0">{% for ph in hoteles %}<li>{{ ph.tipo_habitacion.hotel }} · {{ ph.tipo_habitacion.nombre }} · {{ ph.noches }} noche(s)</li>{% empty %}<li class="text-muted">—</li>{% endfor %}</ul></div></div>
+    <div class="card"><div class="card-body"><h2 class="h6">Pasajeros</h2>
+      <ul class="small mb-0">{% for p in pasajeros %}<li>{{ p }}</li>{% endfor %}</ul></div></div>
+  </div>
+</div>
+<a class="btn btn-link mt-3 px-0" href="{% url 'reservations:detalle' reserva.pk %}">← Volver a la reserva</a>
+{% endblock %}

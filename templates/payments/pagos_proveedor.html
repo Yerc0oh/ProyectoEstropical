@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Pagos a proveedores{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Pagos a proveedores</h1>
+  <a class="btn btn-primary" href="{% url 'payments:pago_proveedor_crear' %}">Registrar pago</a>
+</div>
+<p class="text-muted">Pendiente de pagar: <b>Bs {{ por_pagar }}</b> ·
+  <a href="?estado=pendiente">pendientes</a> · <a href="?estado=pagado">pagados</a> · <a href="?">todos</a></p>
+<div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead><tr><th>Fecha</th><th>Proveedor</th><th>Servicio</th><th>Método</th><th class="text-end">Monto (Bs)</th><th>Estado</th><th></th></tr></thead><tbody>
+  {% for p in object_list %}
+  <tr><td>{{ p.fecha_pago|date:"d/m/Y" }}</td><td>{{ p.proveedor }}</td>
+    <td>{% if p.confirmacion %}{{ p.confirmacion.reserva.codigo }} · {{ p.confirmacion.concepto }}{% else %}{{ p.observacion|default:"-" }}{% endif %}</td>
+    <td>{{ p.get_metodo_display }}{% if p.referencia %}<div class="small text-muted">{{ p.referencia }}</div>{% endif %}</td>
+    <td class="text-end">{{ p.monto }}</td><td>{% include "reservations/_estado.html" with estado=p.estado texto=p.get_estado_display %}</td>
+    <td class="text-end">{% if p.estado == "pendiente" %}
+      <form class="d-flex gap-1 justify-content-end" method="post" action="{% url 'payments:pago_proveedor_pagado' p.pk %}">{% csrf_token %}
+        <input class="form-control form-control-sm" style="max-width:150px" name="referencia" placeholder="Referencia">
+        <button class="btn btn-sm btn-outline-success">Marcar pagado</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Sin pagos a proveedores.</td></tr>{% endfor %}
+</tbody></table></div></div>
+<div class="mt-3">{% include "partials/_pagination.html" %}</div>
+{% endblock %}

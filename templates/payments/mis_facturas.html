@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Mis facturas{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Mis facturas</h1>
+<div class="card"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead><tr><th>N°</th><th>Fecha</th><th>Reserva</th><th>NIT / CI</th><th class="text-end">Monto (Bs)</th><th>Estado</th><th></th></tr></thead><tbody>
+  {% for f in facturas %}
+  <tr><td>{{ f.nro_factura }}</td><td>{{ f.fecha_emision|date:"d/m/Y" }}</td><td>{{ f.reserva.codigo }}</td><td>{{ f.nit_cliente }}</td>
+    <td class="text-end">{{ f.monto }}</td><td>{% include "reservations/_estado.html" with estado=f.estado texto=f.get_estado_display %}</td>
+    <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'payments:factura_pdf' f.pk %}">Descargar PDF</a></td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">Aún no tienes facturas. La agencia las emite después de registrar tus pagos.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

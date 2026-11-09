@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ cliente }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">{{ cliente.nombre_completo }}</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'reservations:cliente_editar' cliente.pk %}">Editar datos</a>
+</div>
+<div class="card mb-3"><div class="card-body"><dl class="row mb-0 small">
+  <dt class="col-sm-3">Correo</dt><dd class="col-sm-9">{{ cliente.usuario.email }}</dd>
+  <dt class="col-sm-3">Documento</dt><dd class="col-sm-9">{{ cliente.get_tipo_documento_display }} {{ cliente.nro_documento }}</dd>
+  <dt class="col-sm-3">Teléfono</dt><dd class="col-sm-9">{{ cliente.telefono|default:"-" }}</dd>
+  <dt class="col-sm-3">Dirección</dt><dd class="col-sm-9">{{ cliente.direccion|default:"-" }}</dd>
+  <dt class="col-sm-3">Datos de facturación</dt><dd class="col-sm-9">{{ cliente.nit|default:"-" }} · {{ cliente.razon_social|default:"-" }}</dd>
+  <dt class="col-sm-3">Registrado</dt><dd class="col-sm-9">{{ cliente.fecha_registro|date:"d/m/Y" }}</dd>
+</dl></div></div>
+<h2 class="h5">Reservas</h2>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+  <thead><tr><th>Código</th><th>Paquete</th><th>Salida</th><th class="text-end">Total (Bs)</th><th>Estado</th></tr></thead><tbody>
+  {% for r in reservas %}
+  <tr><td><a href="{% url 'reservations:detalle' r.pk %}">{{ r.codigo }}</a></td><td>{{ r.paquete.nombre }}</td><td>{{ r.paquete.fecha_salida|date:"d/m/Y" }}</td>
+    <td class="text-end">{{ r.total }}</td><td>{% include "reservations/_estado.html" with estado=r.estado texto=r.get_estado_display %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">Sin reservas.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

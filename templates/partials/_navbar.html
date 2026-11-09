@@ -8,9 +8,38 @@
       <ul class="navbar-nav me-auto">
         <li class="nav-item"><a class="nav-link" href="{% url 'destinations:catalogo' %}">Destinos</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'packages:catalogo' %}">Paquetes</a></li>
-        {% if proveedor_usuario %}
-        <li class="nav-item"><a class="nav-link" href="{% url 'suppliers:mis_documentos' %}">Mis documentos</a></li>
-        {% endif %}
+{% if proveedor_usuario %}
+<li class="nav-item">
+  <a class="nav-link" href="{% url 'suppliers:mis_documentos' %}">
+    Mis documentos
+  </a>
+</li>
+{% endif %}
+
+{% if es_cliente %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+    Mis viajes
+  </a>
+  <ul class="dropdown-menu">
+    <li>
+      <a class="dropdown-item" href="{% url 'reservations:mis_reservas' %}">
+        Mis reservas
+      </a>
+    </li>
+    <li>
+      <a class="dropdown-item" href="{% url 'payments:estados_de_cuenta' %}">
+        Estado de cuenta
+      </a>
+    </li>
+    <li>
+      <a class="dropdown-item" href="{% url 'payments:mis_facturas' %}">
+        Mis facturas
+      </a>
+    </li>
+  </ul>
+</li>
+{% endif %}
         {% if es_admin %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Gestión</a>
@@ -22,10 +51,32 @@
             <li><a class="dropdown-item" href="{% url 'suppliers:gestion_documentos' %}">Documentos de proveedores</a></li>
             <li><a class="dropdown-item" href="{% url 'hotels:gestion_lista' %}">Hoteles</a></li>
             <li><a class="dropdown-item" href="{% url 'flights:gestion_lista' %}">Vuelos</a></li>
+            <li><a class="dropdown-item" href="{% url 'reservations:cronograma_paquetes' %}">Cronogramas</a></li>
             {% if user.is_superuser %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django admin</a></li>
             {% endif %}
+          </ul>
+        </li>
+        <li class="nav-item dropdown">{# Sprint 3 #}
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Reservas</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'reservations:gestion_lista' %}">Reservas</a></li>
+            <li><a class="dropdown-item" href="{% url 'reservations:clientes' %}">Clientes</a></li>
+            <li><a class="dropdown-item" href="{% url 'reservations:confirmaciones' %}">Confirmaciones de proveedores</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">{# Sprint 4 #}
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Caja</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'payments:ventanilla' %}">Pago en ventanilla</a></li>
+            <li><a class="dropdown-item" href="{% url 'payments:gestion_pagos' %}">Pagos</a></li>
+            <li><a class="dropdown-item" href="{% url 'payments:cuentas_por_cobrar' %}">Cuentas por cobrar</a></li>
+            <li><a class="dropdown-item" href="{% url 'payments:gestion_facturas' %}">Facturas</a></li>
+            <li><a class="dropdown-item" href="{% url 'payments:reembolsos' %}">Reembolsos</a></li>
+            <li><a class="dropdown-item" href="{% url 'payments:conciliacion' %}">Conciliación</a></li>
+            <li><a class="dropdown-item" href="{% url 'payments:pagos_proveedor' %}">Pagos a proveedores</a></li>
+            <li><a class="dropdown-item" href="{% url 'payments:caja' %}">Cierre de caja</a></li>
           </ul>
         </li>
         {% endif %}

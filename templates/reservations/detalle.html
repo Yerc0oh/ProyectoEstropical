@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Reserva {{ reserva.codigo }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Reserva {{ reserva.codigo }} {% include "reservations/_estado.html" with estado=reserva.estado texto=reserva.get_estado_display %}</h1>
+    <p class="text-muted mb-0">{{ reserva.paquete.nombre }} · {{ reserva.paquete.destino }} ·
+      {{ reserva.paquete.fecha_salida|date:"d/m/Y" }} al {{ reserva.paquete.fecha_retorno|date:"d/m/Y" }}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-1">
+    <a class="btn btn-outline-primary" href="{% url 'reservations:itinerario' reserva.pk %}">Itinerario</a>
+    <a class="btn btn-outline-primary" href="{% url 'payments:estado_cuenta' reserva.pk %}">Estado de cuenta</a>
+    {% if reserva.esta_activa and saldo > 0 %}<a class="btn btn-primary" href="{% url 'payments:pagar' reserva.pk %}">Pagar</a>{% endif %}
+    {% if reserva.puede_modificarse %}<a class="btn btn-outline-secondary" href="{% url 'reservations:modificar' reserva.pk %}">Modificar</a>{% endif %}
+    {% if reserva.puede_cancelarse %}<a class="btn btn-outline-danger" href="{% url 'reservations:cancelar' reserva.pk %}">Cancelar</a>{% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+    <h2 class="h6">Resumen</h2>
+    <dl class="row small mb-0">
+      <dt class="col-6">Titular</dt><dd class="col-6">{{ reserva.cliente.nombre_completo }}</dd>
+      <dt class="col-6">Pasajeros</dt><dd class="col-6">{{ reserva.cantidad_pasajeros }} × Bs {{ reserva.precio_unitario }}</dd>
+      <dt class="col-6">Subtotal</dt><dd class="col-6">Bs {{ reserva.subtotal }}</dd>
+      <dt class="col-6">Descuento</dt><dd class="col-6">Bs {{ reserva.descuento }}{% if reserva.promocion %} ({{ reserva.promocion.codigo }}){% endif %}</dd>
+      <dt class="col-6">Total</dt><dd class="col-6 fw-bold">Bs {{ reserva.total }}</dd>
+      <dt class="col-6">Pagado</dt><dd class="col-6">Bs {{ pagado }}</dd>
+      <dt class="col-6">Saldo</dt><dd class="col-6 fw-bold">Bs {{ saldo }}</dd>
+      <dt class="col-6">Reservada</dt><dd class="col-6">{{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</dd>
+      {% if reserva.estado == "pendiente" and reserva.fecha_expiracion %}<dt class="col-6">Pagar antes de</dt><dd class="col-6 text-danger">{{ reserva.fecha_expiracion|date:"d/m/Y H:i" }}</dd>{% endif %}
+      {% if reserva.fecha_confirmacion %}<dt class="col-6">Confirmada</dt><dd class="col-6">{{ reserva.fecha_confirmacion|date:"d/m/Y H:i" }}</dd>{% endif %}
+      {% if reserva.fecha_cancelacion %}<dt class="col-6">Cancelada</dt><dd class="col-6">{{ reserva.fecha_cancelacion|date:"d/m/Y H:i" }}<br>{{ reserva.motivo_cancelacion }}</dd>{% endif %}
+      {% if reserva.observaciones %}<dt class="col-6">Observaciones</dt><dd class="col-6">{{ reserva.observaciones }}</dd>{% endif %}
+    </dl>
+    {% if es_admin_vista %}
+    <hr>
+    {% if reserva.puede_confirmarse %}
+    <form method="post" action="{% url 'reservations:confirmar' reserva.pk %}">{% csrf_token %}
+      <button class="btn btn-success w-100" {% if pagado <= 0 %}disabled title="Sin pagos registrados"{% endif %}>Confirmar reserva</button>
+    </form>
+    {% elif reserva.estado == "confirmada" %}
+    <form method="post" action="{% url 'reservations:generar_confirmaciones' reserva.pk %}">{% csrf_token %}
+      <button class="btn btn-outline-success w-100">Solicitar confirmación a proveedores</button>
+    </form>
+    {% endif %}
+    <div class="d-flex gap-1 mt-2">
+      <a class="btn btn-sm btn-outline-secondary flex-fill" href="{% url 'payments:ventanilla' %}?codigo={{ reserva.codigo }}">Pago en ventanilla</a>
+      <a class="btn btn-sm btn-outline-secondary flex-fill" href="{% url 'payments:emitir_factura' reserva.pk %}">Facturar</a>
+    </div>
+    {% endif %}
+  </div></div></div>
+
+  <div class="col-lg-8"><div class="card h-100"><div class="card-body">
+    <h2 class="h6">Pasajeros y documentos de viaje</h2>
+    {% for p in pasajeros %}
+    <div class="border rounded p-2 mb-2">
+      <div class="fw-bold">{{ p }}</div>
+      <div class="small text-muted">{{ p.get_tipo_documento_display }} {{ p.nro_documento }} · Nac. {{ p.fecha_nacimiento|date:"d/m/Y" }}{% if p.nacionalidad %} · {{ p.nacionalidad }}{% endif %}</div>
+      {% for d in p.documentos.all %}
+      <div class="d-flex align-items-center gap-2 small mt-1">
+        <a href="{% url 'reservations:documento_descargar' d.pk %}">{{ d.get_tipo_display }}{% if d.numero %} {{ d.numero }}{% endif %}</a>
+        {% if d.fecha_vencimiento %}<span class="{% if d.vencido %}text-danger{% else %}text-muted{% endif %}">vence {{ d.fecha_vencimiento|date:"d/m/Y" }}{% if d.vencido %} (vencido){% endif %}</span>{% endif %}
+        <form method="post" action="{% url 'reservations:documento_eliminar' d.pk %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0">quitar</button></form>
+      </div>
+      {% empty %}<div class="small text-muted mt-1">Sin documentos cargados.</div>{% endfor %}
+    </div>
+    {% endfor %}
+    {% if reserva.esta_activa %}
+    <h3 class="h6 mt-3">Cargar documento</h3>
+    <form method="post" enctype="multipart/form-data" action="{% url 'reservations:documento_subir' reserva.pk %}" class="row g-2">{% csrf_token %}
+      {% for field in doc_form %}
+      <div class="{% if field.name == 'archivo' %}col-md-12{% else %}col-md-3{% endif %}">
+        <label class="form-label small mb-0" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="col-12"><button class="btn btn-sm btn-primary">Subir</button></div>
+    </form>
+    {% endif %}
+  </div></div></div>
+</div>
+
+{% if es_admin_vista and confirmaciones %}
+<div class="card mt-3"><div class="card-body">
+  <h2 class="h6">Confirmación de servicios con proveedores</h2>
+  <table class="table table-sm mb-0"><tbody>
+  {% for c in confirmaciones %}
+  <tr><td>{{ c.proveedor }}</td><td>{{ c.concepto }}</td><td>{% include "reservations/_estado.html" with estado=c.estado texto=c.get_estado_display %}</td>
+    <td>{{ c.codigo_confirmacion }}</td>
+    <td class="text-end">{% if c.estado == "pendiente" %}<a class="btn btn-sm btn-outline-primary" href="{% url 'reservations:responder_confirmacion' c.pk %}">Registrar respuesta</a>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody></table>
+</div></div>
+{% endif %}
+<a class="btn btn-link mt-3 px-0" href="{% if es_admin_vista %}{% url 'reservations:gestion_lista' %}{% else %}{% url 'reservations:mis_reservas' %}{% endif %}">← Volver</a>
+{% endblock %}

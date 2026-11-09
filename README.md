@@ -1,69 +1,240 @@
+
 # Estropical.com · Tropical Tours Ltda.
 
-Sistema web de venta de viajes (proyecto académico). **Este esqueleto cubre los Sprints 1 y 2.**
-Stack: Django 5.2 · PostgreSQL · Bootstrap 5 · plantillas HTML (sin API separada).
+Sistema web de gestión y venta de viajes desarrollado como proyecto académico.
+
+El proyecto integra los avances de los Sprints 1 a 4:
+
+- Sprint 1: acceso de usuarios, perfiles, roles y destinos.
+- Sprint 2: paquetes turísticos, proveedores, hoteles, vuelos y disponibilidad.
+- Sprint 3: reservas, clientes, confirmaciones, documentos e itinerarios.
+- Sprint 4: pagos, cuotas, facturación académica, reembolsos y caja.
+
+Los Sprints 5 y 6 corresponden a recomendaciones personalizadas, reportes, indicadores, notificaciones, atención al cliente y administración complementaria.
+
+**Tecnologías:** Python, Django 5.2, PostgreSQL, Bootstrap 5 y plantillas HTML. El proyecto no utiliza una API separada.
 
 ## Puesta en marcha
 
-```bash
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+### Windows / PowerShell
+
+Desde la carpeta principal del proyecto:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-cp .env.example .env                                   # editar SECRET_KEY y DATABASE_URL
-createdb estropical_db                                 # o desde pgAdmin
-python manage.py migrate                               # crea tablas + roles + países/categorías base
-python manage.py createsuperuser                       # usar un correo como nombre de usuario
+Copy-Item .env.example .env
+```
+
+Editar `.env` y configurar `SECRET_KEY` y `DATABASE_URL` con los datos de PostgreSQL.
+
+Crear la base de datos `estropical_db` mediante pgAdmin o PostgreSQL.
+
+Después ejecutar:
+
+```powershell
+python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Pruebas: `python manage.py test` (180 pruebas de acceso por rol, registro, recuperación, reenvío de verificación, perfil, cambio de correo, cambio de contraseña, paquetes, filtros del catálogo, hoteles, vuelos, disponibilidad, documentos de proveedores y gestión).
+Para el superusuario, utilizar un correo electrónico como nombre de usuario.
+
+### Pruebas
+
+```powershell
+python manage.py check
+python manage.py test
+```
+
+Las pruebas requieren una conexión a PostgreSQL y permisos para crear una base de datos de pruebas.
+
+La cantidad total de pruebas y sus resultados deben verificarse después de integrar las ramas. Los Sprints 1 y 2 incluyen pruebas de autenticación, perfiles, paquetes, hoteles, vuelos, proveedores y disponibilidad. Los Sprints 3 y 4 incorporan pruebas de reservas, cupos, pagos, cuotas, facturas, conciliación y cierre de caja.
+
+### Expiración de reservas
+
+El proyecto incorpora el comando:
+
+```powershell
+python manage.py expirar_reservas
+```
+
+Permite procesar reservas pendientes que superaron el plazo de pago. Puede ejecutarse periódicamente mediante una tarea programada.
 
 ## Accesos y seguridad
 
-| Visitante | Cómo se identifica | Qué puede hacer |
+| Tipo de usuario | Identificación | Funcionalidades |
 |---|---|---|
-| Sin cuenta | sin sesión | Inicio, catálogo de destinos y paquetes (ver/filtrar/comparar), registro, login, recuperar contraseña |
-| Cliente | grupo `Cliente` | Todo lo anterior + su perfil (y, en el Sprint 3, reservas y pagos) |
-| Proveedor | usuario vinculado en `Proveedor.usuario` | Su perfil + `/proveedor/documentos/` (cargar, consultar y descargar solo sus documentos) |
-| Administrador | grupo `Administrador` o superusuario | Todo lo anterior + panel `/gestion/...` (usuarios, destinos, paquetes, proveedores, documentos, hoteles, vuelos) |
+| Visitante | Sin sesión | Inicio, catálogo de destinos y paquetes, registro, inicio de sesión y recuperación de contraseña |
+| Cliente | Grupo `Cliente` | Perfil, reservas, itinerarios, pagos, estados de cuenta y facturas |
+| Proveedor | Usuario vinculado a `Proveedor.usuario` | Perfil y gestión de sus documentos privados |
+| Administrador | Grupo `Administrador` o superusuario | Gestión de usuarios, destinos, paquetes, proveedores, hoteles, vuelos, reservas, clientes, pagos, facturas, reembolsos y caja |
 
-* **Token de sesión:** al iniciar sesión Django emite una cookie de sesión firmada
-  (`HttpOnly`, `SameSite=Lax`, caduca a las 8 h; `Secure` en producción) más token CSRF en cada formulario.
-* **Deny by default:** `LoginRequiredMiddleware` exige sesión en TODAS las vistas. Una vista es
-  pública solo si se envuelve con `public(...)` (ver `apps/core/access.py` y los `urls.py`).
-  Si olvidas marcar una vista, queda protegida, no expuesta.
-* **Roles:** `AdminRequiredMixin` / `ClienteRequiredMixin` (clases) y `@admin_required` /
-  `@cliente_required` (funciones). Anónimo → redirige al login; con sesión pero sin el rol → 403.
-* Verificación de correo al registrarse (cuenta inactiva hasta abrir el enlace, de un solo uso),
-  recuperación de contraseña, cierre de sesión solo por POST.
-* `/admin/` (Django admin) queda solo para superusuarios: usuarios, grupos, logs y errores.
-* **Documentos de proveedores:** son privados. Solo el proveedor propietario o un
-  administrador pueden descargarlos mediante una vista autenticada; la carpeta
-  `/media/proveedores/` queda excluida del servido público de archivos.
-* En desarrollo los correos se imprimen en la consola del servidor.
+### Mecanismos de seguridad
 
-## Estructura
+- Autenticación mediante sesiones de Django.
+- Cookies de sesión con protección `HttpOnly` y configuración de seguridad según el entorno.
+- Protección CSRF en formularios.
+- `LoginRequiredMiddleware` para restringir vistas privadas.
+- Control de acceso mediante roles y permisos.
+- Verificación de correo electrónico.
+- Recuperación y cambio de contraseña.
+- Cierre de sesión mediante solicitudes POST.
+- Acceso restringido a documentos de proveedores.
+- Acceso restringido a documentos de viaje.
+- Uso de una pasarela simulada sin almacenamiento de datos de tarjetas.
 
+En desarrollo, los correos electrónicos pueden visualizarse en la consola del servidor.
+
+## Estructura del proyecto
+
+```text
+config/
+  settings/
+    base.py
+    dev.py
+    prod.py
+
+apps/
+  core/          Funcionalidades compartidas, permisos, CRUD y PDF
+  accounts/      Usuarios, autenticación, perfiles y roles
+  destinations/  Países, categorías, destinos y fotografías
+  suppliers/     Proveedores y documentos
+  hotels/        Hoteles, habitaciones y tarifas
+  flights/       Vuelos y disponibilidad
+  packages/      Paquetes turísticos, catálogo y comparación
+  reservations/  Reservas, pasajeros, clientes, itinerarios y confirmaciones
+  payments/      Pagos, cuotas, facturas, reembolsos y caja
+
+templates/       Plantillas HTML
+static/          Archivos CSS, JavaScript y recursos estáticos
+media/           Archivos cargados
+docs/            Documentación y esquema de base de datos
+manage.py        Administración del proyecto Django
+requirements.txt Dependencias
 ```
-config/settings/{base,dev,prod}.py   configuración por entorno (variables en .env)
-apps/core/          access.py (roles), formularios y vistas CRUD base, home
-apps/accounts/      Perfil, registro, login, recuperación, perfil, usuarios y roles   (S1 CU-01..06)
-apps/destinations/  Pais, Categoria, Destino, DestinoFoto, catálogo y gestión          (S1 CU-07, 08)
-apps/suppliers/     Proveedor, ProveedorDocumento, portal y revisión de docs     (S2 CU-13)
-apps/hotels/        Hotel, TipoHabitacion, TarifaHabitacion                   (S2 CU-14, CU-16)
-apps/flights/       Vuelo                                                     (S2 CU-15, CU-16)
-apps/packages/      Paquete y sus relaciones, catálogo, detalle, comparar, gestión (S2 CU-09..12, CU-16)
-templates/ static/ media/            plantillas, CSS/JS, archivos subidos
-docs/               estropical_schema.sql (esquema completo, S1-S6), diagrama ER (.drawio/.png)
+
+## Base de datos
+
+El proyecto utiliza PostgreSQL y modelos Django con nombres de tablas definidos mediante `db_table`.
+
+El archivo `docs/estropical_schema.sql` describe el esquema general previsto para los seis Sprints.
+
+**No ejecutar manualmente el esquema SQL completo**, porque las tablas y los objetos de base de datos deben gestionarse mediante las migraciones de Django.
+
+### Funciones, triggers y vistas
+
+| Objeto | Migración | Funcionalidad |
+|---|---|---|
+| `trg_reserva_cupos` y `fn_ajustar_cupos()` | `reservations/0002` | Control de cupos y asientos al reservar, modificar o cancelar |
+| `fn_penalidad_cancelacion` | `payments/0002` | Cálculo de penalidades de cancelación |
+| `fn_cerrar_caja` | `payments/0002` | Consolidación de movimientos de caja |
+| `v_saldo_reserva` | `payments/0002` | Consulta de saldos y cuentas por cobrar |
+
+Las actualizaciones administrativas de disponibilidad y los ajustes realizados por los triggers de reservas deben comprobarse conjuntamente después de la integración.
+
+## Funcionalidades de los Sprints 3 y 4
+
+### Reservas
+
+- Registro y consulta de reservas.
+- Modificación y cancelación de reservas.
+- Gestión de clientes y pasajeros.
+- Confirmaciones de proveedores.
+- Documentos de viaje.
+- Generación de itinerarios.
+- Procesamiento de reservas expiradas.
+
+### Pagos y facturación
+
+- Pagos mediante una pasarela simulada.
+- Pagos en ventanilla.
+- Gestión de cuotas.
+- Estados de cuenta.
+- Facturas académicas en PDF.
+- Reembolsos.
+- Conciliación de pagos.
+- Cuentas por cobrar.
+- Pagos a proveedores.
+- Cierre de caja.
+
+Las facturas generadas no representan facturación electrónica oficial del Servicio de Impuestos Nacionales.
+
+### Promociones y parámetros
+
+Los modelos `Promocion` y `ParametroSistema` se incorporaron anticipadamente en `apps/reservations` porque son utilizados por las reservas y los pagos.
+
+La administración completa de promociones y cupones corresponde al CU-50 del Sprint 6.
+
+Los parámetros de penalización, plazos de pago y cuotas pueden gestionarse mediante Django admin según la implementación existente.
+
+### Pasarela de pagos simulada
+
+El sistema no realiza cobros bancarios reales ni almacena datos de tarjetas.
+
+Los números de prueba documentados por el módulo son:
+
+- Tarjeta aprobada: `4111 1111 1111 1111`
+- Tarjeta rechazada: `4000 0000 0000 0002`
+
+Los pagos QR también son simulados.
+
+### Conciliación
+
+La conciliación permite comparar referencias y montos registrados con un archivo CSV que utiliza las columnas:
+
+```csv
+referencia,monto
 ```
 
-Los modelos usan `db_table` y nombres de columna del `docs/estropical_schema.sql`. Las migraciones de
-Django crean las tablas de los Sprints 1 y 2; las funciones, triggers y vistas del esquema
-(`trg_reserva_cupos`, `fn_penalidad_cancelacion`, `fn_cerrar_caja`, vistas) se agregarán en el
-Sprint 3 y 4 con migraciones `RunSQL`.
+## Funcionalidades pendientes y verificaciones
 
-## Pendiente por completar (buscar `TODO` en el código)
+La integración de las ramas no garantiza por sí sola que todas las funcionalidades estén completas o sean compatibles.
 
-- CU-08: formset de fotos del destino (subir, ordenar, elegir portada).
-- CU-17: confirmar servicios con proveedores (depende de reservas → Sprint 3).
-- Portada (`core/home.html`), diseño final.
-- Producción: SMTP real, `ALLOWED_HOSTS`, servir solo `/media/` público, límite de intentos de login.
+Se debe verificar:
+
+- CU-08: gestión de fotografías de destinos.
+- CU-12: asociación de servicios, hoteles, vuelos y actividades a paquetes.
+- CU-13: carga, validación y revisión de documentos de proveedores.
+- CU-14: gestión de tipos de habitación y tarifas.
+- CU-16: actualización de disponibilidad.
+- CU-17: confirmación de servicios con proveedores.
+- Compatibilidad entre las migraciones y los modelos de los cuatro Sprints.
+- Funcionamiento de rutas, permisos y menús.
+- Pruebas automatizadas de Django.
+- Diseño final de la página principal.
+- Configuración de producción: SMTP, `ALLOWED_HOSTS`, HTTPS y acceso seguro a archivos.
+
+Los puntos anteriores son verificaciones pendientes, no afirmaciones de que las funcionalidades estén ausentes.
+
+## Sprints 5 y 6
+
+### Sprint 5: personalización, inteligencia artificial y reportes
+
+- CU-38: gestionar preferencias de viaje.
+- CU-39: generar recomendaciones personalizadas con inteligencia artificial.
+- CU-40: generar reportes de ventas en PDF y Excel.
+- CU-41: generar reportes de reservas y proveedores.
+- CU-42: generar reportes de facturación y pagos.
+- CU-43: consultar indicadores mediante un dashboard.
+- CU-44: gestionar notificaciones.
+
+### Sprint 6: atención al cliente y administración
+
+- CU-45: enviar solicitudes de soporte.
+- CU-46: gestionar solicitudes de soporte.
+- CU-47: registrar valoraciones y reseñas.
+- CU-48: moderar reseñas.
+- CU-49: gestionar destinos favoritos.
+- CU-50: gestionar promociones y cupones.
+- CU-51: consultar registros de auditoría.
+- CU-52: administrar parámetros del sistema y respaldos.
+
+Estas funcionalidades se desarrollarán sobre los módulos integrados, reutilizando los modelos existentes y evitando duplicar tablas o alterar las funciones implementadas por los demás integrantes.
+
+## Consideraciones
+
+El sistema es un proyecto académico. No incluye emisión real de boletos, cobros bancarios reales, facturación electrónica oficial ni conexión en tiempo real con sistemas externos de aerolíneas y hoteles.
+
+Antes de considerar finalizada la integración, se deben ejecutar las comprobaciones de Django y revisar los resultados de las pruebas.

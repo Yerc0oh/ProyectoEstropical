@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     "apps.hotels",        # Sprint 2: hoteles, habitaciones, tarifas
     "apps.flights",       # Sprint 2: vuelos
     "apps.packages",      # Sprint 2: paquetes turísticos
+    "apps.reservations",  # Sprint 3: reservas, pasajeros, documentos, itinerarios
+    "apps.payments",      # Sprint 4: pagos, cuotas, facturas, reembolsos, caja
 ]
 
 MIDDLEWARE = [
