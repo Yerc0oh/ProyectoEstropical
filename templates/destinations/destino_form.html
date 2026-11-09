@@ -1,0 +1,538 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+  Gestionar destino | Estropical
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="mb-4">
+    <a href="{% url 'destinations:gestion_lista' %}"
+       class="text-decoration-none">
+      <i class="bi bi-arrow-left me-1"></i>
+      Volver a destinos
+    </a>
+
+    <h1 class="fw-bold mt-3">
+      {% if object %}
+        Editar destino
+      {% else %}
+        Registrar nuevo destino
+      {% endif %}
+    </h1>
+
+    <p class="text-muted">
+      Registra la información del destino y selecciona
+      una fotografía para mostrarla en el catálogo turístico.
+    </p>
+  </div>
+
+  <form method="post"
+        enctype="multipart/form-data"
+        id="form-destino">
+
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-body p-4">
+
+        <h2 class="h5 fw-bold mb-4">
+          <i class="bi bi-geo-alt me-2"></i>
+          Información del destino
+        </h2>
+
+        <div class="row g-3">
+          {% for field in form %}
+            {% if field.name != "imagen" and field.name != "commons_titulo" %}
+
+            <div class="{% if field.name == 'descripcion' %}col-12{% else %}col-md-6{% endif %}">
+
+              {% if field.field.widget.input_type == "checkbox" %}
+              <div class="form-check mt-3">
+                {{ field }}
+                <label class="form-check-label fw-semibold"
+                       for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                </label>
+              </div>
+
+              {% else %}
+              <label class="form-label fw-semibold"
+                     for="{{ field.id_for_label }}">
+                {{ field.label }}
+              </label>
+
+              {{ field }}
+              {% endif %}
+
+              {% if field.help_text %}
+              <div class="form-text">
+                {{ field.help_text }}
+              </div>
+              {% endif %}
+
+              {% for error in field.errors %}
+              <div class="text-danger small mt-1">
+                {{ error }}
+              </div>
+              {% endfor %}
+            </div>
+
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+      <div class="card-body p-4">
+
+        <h2 class="h5 fw-bold mb-2">
+          <i class="bi bi-images me-2"></i>
+          Fotografía de portada
+        </h2>
+
+        <p class="text-muted">
+          Busca fotografías de tu destino en Wikimedia
+          Commons o sube una desde tu computadora.
+        </p>
+
+        {% if object %}
+          {% with portada=object.portada %}
+            {% if portada %}
+            <div class="mb-4">
+              <p class="fw-semibold mb-2">
+                Portada actual
+              </p>
+
+              <img src="{{ portada.archivo.url }}"
+                   alt="Portada de {{ object.nombre }}"
+                   class="rounded-3"
+                   style="width:100%;max-width:380px;height:220px;object-fit:cover;">
+
+              <p class="small text-muted mt-2">
+                Si no seleccionas otra fotografía,
+                se conservará esta portada.
+              </p>
+            </div>
+            {% endif %}
+          {% endwith %}
+        {% endif %}
+
+        <div class="bg-light rounded-4 p-3 p-md-4 mb-4">
+
+          <h3 class="h6 fw-bold mb-3">
+            Buscar fotografías en internet
+          </h3>
+
+          <div class="row g-2">
+
+            <div class="col-md-5">
+              <label for="buscar-nombre"
+                     class="form-label">
+                Destino
+              </label>
+
+              <input type="search"
+                     id="buscar-nombre"
+                     class="form-control"
+                     placeholder="Ej. Machu Picchu">
+            </div>
+
+            <div class="col-md-5">
+              <label for="buscar-pais"
+                     class="form-label">
+                País
+              </label>
+
+              <input type="search"
+                     id="buscar-pais"
+                     class="form-control"
+                     placeholder="Ej. Perú">
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="button"
+                      id="btn-buscar"
+                      class="btn btn-primary w-100">
+                <i class="bi bi-search"></i>
+                Buscar
+              </button>
+            </div>
+
+          </div>
+
+          <p class="small text-muted mt-3 mb-0">
+            La búsqueda no recarga la página ni borra
+            los datos que hayas escrito.
+          </p>
+        </div>
+
+        <div id="mensaje-fotos"
+             role="status"
+             aria-live="polite"
+             class="mb-3"></div>
+
+        <div id="galeria-fotos"
+             class="row g-3 mb-4"></div>
+
+        <div id="foto-seleccionada"
+             class="alert alert-success d-none">
+          <i class="bi bi-check-circle me-2"></i>
+          Fotografía seleccionada como portada.
+          Se guardará cuando registres el destino.
+
+          <button type="button"
+                  id="quitar-foto"
+                  class="btn btn-sm btn-outline-success ms-2">
+            Quitar selección
+          </button>
+        </div>
+
+        <hr class="my-4">
+
+        <h3 class="h6 fw-bold">
+          O subir una fotografía propia
+        </h3>
+
+        {{ form.imagen }}
+
+        <p class="form-text">
+          Formatos JPG, PNG y WebP. Máximo 5 MB.
+        </p>
+
+        {% for error in form.imagen.errors %}
+        <div class="text-danger small">
+          {{ error }}
+        </div>
+        {% endfor %}
+
+        <img id="preview-propia"
+             class="d-none rounded-3 mt-3"
+             alt="Vista previa de fotografía"
+             style="width:100%;max-width:380px;height:220px;object-fit:cover;">
+
+        {{ form.commons_titulo }}
+
+        {% for error in form.commons_titulo.errors %}
+        <div class="text-danger small mt-2">
+          {{ error }}
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+
+      <button type="submit"
+              id="btn-guardar"
+              class="btn btn-primary px-4">
+        <i class="bi bi-check-circle me-1"></i>
+        Guardar destino
+      </button>
+
+      <a href="{% url 'destinations:gestion_lista' %}"
+         class="btn btn-outline-secondary">
+        Cancelar
+      </a>
+
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const URL_BUSQUEDA =
+    "{% url 'destinations:buscar_fotografias' %}";
+
+  const inputNombre = document.getElementById("buscar-nombre");
+  const inputPais = document.getElementById("buscar-pais");
+  const btnBuscar = document.getElementById("btn-buscar");
+
+  const galeria = document.getElementById("galeria-fotos");
+  const mensaje = document.getElementById("mensaje-fotos");
+
+  const campoCommons = document.getElementById(
+    "id_commons_titulo"
+  );
+
+  const campoArchivo = document.getElementById("id_imagen");
+  const preview = document.getElementById("preview-propia");
+
+  const seleccion = document.getElementById(
+    "foto-seleccionada"
+  );
+
+  const quitar = document.getElementById("quitar-foto");
+
+  const campoNombreDestino = document.getElementById(
+    "id_nombre"
+  );
+
+  const campoPaisDestino = document.getElementById(
+    "id_pais"
+  );
+
+  let busquedaActual = 0;
+  let controlador = null;
+  let previewUrl = null;
+
+  // Completar el nombre con lo escrito en el formulario.
+  if (campoNombreDestino) {
+    inputNombre.value = campoNombreDestino.value;
+  }
+
+  // Utilizar el nombre visible del país seleccionado.
+  function actualizarPais() {
+    if (!campoPaisDestino) return;
+
+    const opcion = campoPaisDestino.options[
+      campoPaisDestino.selectedIndex
+    ];
+
+    if (opcion && opcion.value) {
+      inputPais.value = opcion.textContent.trim();
+    }
+  }
+
+  actualizarPais();
+
+  if (campoPaisDestino) {
+    campoPaisDestino.addEventListener(
+      "change",
+      actualizarPais
+    );
+  }
+
+  function mostrarMensaje(texto, tipo = "info") {
+    mensaje.className = "alert alert-" + tipo + " mb-3";
+    mensaje.textContent = texto;
+  }
+
+  function limpiarMensaje() {
+    mensaje.className = "mb-3";
+    mensaje.textContent = "";
+  }
+
+  function quitarSeleccion() {
+    campoCommons.value = "";
+    seleccion.classList.add("d-none");
+
+    document.querySelectorAll(
+      ".foto-wikimedia"
+    ).forEach(function (elemento) {
+      elemento.classList.remove(
+        "border-primary",
+        "border-3"
+      );
+    });
+  }
+
+  function crearFoto(foto) {
+    const columna = document.createElement("div");
+    columna.className = "col-md-6 col-lg-4";
+
+    const tarjeta = document.createElement("div");
+    tarjeta.className =
+      "card h-100 shadow-sm rounded-4 overflow-hidden " +
+      "foto-wikimedia";
+
+    const imagen = document.createElement("img");
+    imagen.src = foto.miniatura;
+    imagen.alt = foto.titulo;
+    imagen.loading = "lazy";
+    imagen.style.width = "100%";
+    imagen.style.height = "180px";
+    imagen.style.objectFit = "cover";
+
+    const cuerpo = document.createElement("div");
+    cuerpo.className = "card-body";
+
+    const autor = document.createElement("p");
+    autor.className = "small text-muted mb-1";
+    autor.textContent = "Autor: " + foto.autor;
+
+    const licencia = document.createElement("p");
+    licencia.className = "small text-muted mb-2";
+    licencia.textContent = "Licencia: " + foto.licencia;
+
+    const fuente = document.createElement("a");
+    fuente.href = foto.pagina;
+    fuente.target = "_blank";
+    fuente.rel = "noopener noreferrer";
+    fuente.className = "small d-block mb-3";
+    fuente.textContent = "Ver fotografía y créditos";
+
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "btn btn-outline-primary w-100";
+    boton.textContent = "Elegir fotografía";
+
+    boton.addEventListener("click", function () {
+      quitarSeleccion();
+
+      campoCommons.value = foto.titulo;
+      campoArchivo.value = "";
+
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+      }
+
+      preview.classList.add("d-none");
+
+      tarjeta.classList.add(
+        "border-primary",
+        "border-3"
+      );
+
+      seleccion.classList.remove("d-none");
+    });
+
+    cuerpo.appendChild(autor);
+    cuerpo.appendChild(licencia);
+    cuerpo.appendChild(fuente);
+    cuerpo.appendChild(boton);
+
+    tarjeta.appendChild(imagen);
+    tarjeta.appendChild(cuerpo);
+    columna.appendChild(tarjeta);
+
+    return columna;
+  }
+
+  async function buscarFotografias() {
+    const nombre = inputNombre.value.trim();
+    const pais = inputPais.value.trim();
+
+    if (nombre.length < 2) {
+      mostrarMensaje(
+        "Escribe al menos dos caracteres.",
+        "warning"
+      );
+      return;
+    }
+
+    if (controlador) {
+      controlador.abort();
+    }
+
+    controlador = new AbortController();
+    const identificador = ++busquedaActual;
+
+    galeria.replaceChildren();
+
+    btnBuscar.disabled = true;
+    mostrarMensaje(
+      "Buscando fotografías en Wikimedia Commons..."
+    );
+
+    const parametros = new URLSearchParams({
+      nombre: nombre,
+      pais: pais
+    });
+
+    try {
+      const respuesta = await fetch(
+        URL_BUSQUEDA + "?" + parametros.toString(),
+        {
+          method: "GET",
+          credentials: "same-origin",
+          signal: controlador.signal
+        }
+      );
+
+      const datos = await respuesta.json();
+
+      if (identificador !== busquedaActual) {
+        return;
+      }
+
+      if (!respuesta.ok) {
+        throw new Error(
+          datos.error || "No se pudo realizar la búsqueda."
+        );
+      }
+
+      const fotografias = datos.fotografias || [];
+
+      if (!fotografias.length) {
+        mostrarMensaje(
+          "No encontramos fotografías compatibles. " +
+          "Prueba con otro nombre o sube una imagen propia.",
+          "warning"
+        );
+        return;
+      }
+
+      limpiarMensaje();
+
+      fotografias.forEach(function (foto) {
+        galeria.appendChild(crearFoto(foto));
+      });
+
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        mostrarMensaje(
+          error.message || "Error de conexión.",
+          "danger"
+        );
+      }
+    } finally {
+      if (identificador === busquedaActual) {
+        btnBuscar.disabled = false;
+      }
+    }
+  }
+
+  btnBuscar.addEventListener(
+    "click",
+    buscarFotografias
+  );
+
+  [inputNombre, inputPais].forEach(function (campo) {
+    campo.addEventListener("keydown", function (evento) {
+      if (evento.key === "Enter") {
+        evento.preventDefault();
+        buscarFotografias();
+      }
+    });
+  });
+
+  quitar.addEventListener("click", quitarSeleccion);
+
+  campoArchivo.addEventListener("change", function () {
+    if (!campoArchivo.files.length) {
+      preview.classList.add("d-none");
+      return;
+    }
+
+    quitarSeleccion();
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    previewUrl = URL.createObjectURL(
+      campoArchivo.files[0]
+    );
+
+    preview.src = previewUrl;
+    preview.classList.remove("d-none");
+  });
+
+});
+</script>
+{% endblock %}

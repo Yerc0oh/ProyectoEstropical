@@ -27,6 +27,17 @@ INSTALLED_APPS = [
     "apps.hotels",        # Sprint 2: hoteles, habitaciones, tarifas
     "apps.flights",       # Sprint 2: vuelos
     "apps.packages",      # Sprint 2: paquetes turísticos
+    "apps.reservations",  # Sprint 3: reservas, pasajeros, documentos, itinerarios
+    "apps.payments",      # Sprint 4: pagos, cuotas, facturas, reembolsos, caja
+    # Sprint 5
+    "apps.preferences",
+    "apps.recommendations",
+    "apps.reports",
+    "apps.notifications.apps.NotificationsConfig",
+    # Sprint 6
+    "apps.support", 
+    "apps.reviews.apps.ReviewsConfig",
+
 ]
 
 MIDDLEWARE = [
@@ -86,6 +97,8 @@ SESSION_COOKIE_HTTPONLY = True              # JS no puede leer la cookie de sesi
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24 * 3   # enlaces de verificación/recuperación: 3 días
+# El cambio de correo usa su propia caducidad (configurable por variable de entorno).
+EMAIL_CHANGE_TIMEOUT = env.int("EMAIL_CHANGE_TIMEOUT", default=60 * 60 * 24)
 # TODO: limitar intentos fallidos de login (p. ej. django-axes) antes de producción.
 
 # ---------------------------------------------------------------- Correo
@@ -93,6 +106,12 @@ EMAIL_CONFIG = env.email("EMAIL_URL", default="consolemail://")
 vars().update(EMAIL_CONFIG)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Estropical <no-reply@estropical.local>")
 SITE_URL = env("SITE_URL", default="http://localhost:8000")
+
+# ---------------------------------------------------------------- Inteligencia Artificial - Sprint 5
+# Integración con Google Gemini para recomendaciones y chatbot turístico.
+
+GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+GEMINI_MODEL = env("GEMINI_MODEL", default="gemini-3.8-flash")
 
 # ---------------------------------------------------------------- Internacionalización
 LANGUAGE_CODE = "es"
@@ -106,3 +125,6 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# CU-13: límite para documentos de proveedores (5 MB por defecto).
+DOCUMENTO_PROVEEDOR_MAX_BYTES = env.int(
+    "DOCUMENTO_PROVEEDOR_MAX_BYTES", default=5 * 1024 * 1024)

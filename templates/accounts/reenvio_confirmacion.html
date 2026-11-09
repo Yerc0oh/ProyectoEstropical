@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Solicitud recibida{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="h3">Revisa tu correo</h1>
+  <p>Si el correo pertenece a una cuenta pendiente de verificación, recibirás un nuevo enlace de activación.</p>
+  <a class="btn btn-outline-primary" href="{% url 'accounts:login' %}">Volver a ingresar</a>
+</div>
+{% endblock %}

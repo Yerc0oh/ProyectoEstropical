@@ -25,6 +25,11 @@ class Perfil(models.Model):
                                      null=True, blank=True, db_column="nacionalidad_id")
     nit = models.CharField(max_length=20, blank=True)
     razon_social = models.CharField(max_length=150, blank=True)
+    # Cambio de correo pendiente de verificación. El correo real del usuario
+    # (User.email / User.username) no se modifica hasta confirmar el enlace.
+    correo_pendiente = models.EmailField(null=True, blank=True)
+    # Nonce que invalida los enlaces anteriores en cada nueva solicitud.
+    correo_pendiente_nonce = models.CharField(max_length=64, blank=True, default="")
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:

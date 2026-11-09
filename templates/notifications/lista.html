@@ -1,0 +1,67 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Mis notificaciones</h2>
+            <p class="text-muted">
+                Tienes {{ pendientes }} notificaciones sin leer.
+            </p>
+        </div>
+
+        <form method="post"
+              action="{% url 'notifications:marcar_todas' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary">
+                Marcar todas como leídas
+            </button>
+        </form>
+    </div>
+
+    {% for notificacion in notificaciones %}
+    <div class="card mb-3 {% if not notificacion.leida %}border-primary{% endif %}">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between">
+                <h5>{{ notificacion.titulo }}</h5>
+                <small class="text-muted">
+                    {{ notificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                </small>
+            </div>
+
+            <p>{{ notificacion.mensaje }}</p>
+
+            {% if notificacion.url %}
+                <a href="{{ notificacion.url }}"
+                   class="btn btn-sm btn-outline-secondary">
+                    Ver detalle
+                </a>
+            {% endif %}
+
+            {% if not notificacion.leida %}
+                <form method="post"
+                      action="{% url 'notifications:marcar_leida' notificacion.pk %}"
+                      class="mt-2">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn btn-sm btn-primary">
+                        Marcar como leída
+                    </button>
+                </form>
+            {% else %}
+                <span class="badge bg-success">Leída</span>
+            {% endif %}
+
+        </div>
+    </div>
+    {% empty %}
+        <div class="alert alert-info">
+            Todavía no tienes notificaciones.
+        </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Cierre de caja{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Cierre de caja</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-auto"><input class="form-control" type="date" name="fecha" value="{{ mov.fecha|date:'Y-m-d' }}"></div>
+  <div class="col-auto"><button class="btn btn-outline-primary">Ver movimientos</button></div>
+</form>
+<div class="row g-3 mb-3">
+  <div class="col-md-4"><div class="card"><div class="card-body py-2"><div class="small text-muted">Ingresos (pagos)</div><div class="fs-5 fw-bold text-success">Bs {{ mov.ingresos }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body py-2"><div class="small text-muted">Egresos (reembolsos + proveedores)</div><div class="fs-5 fw-bold text-danger">Bs {{ mov.egresos }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body py-2"><div class="small text-muted">Saldo del día</div><div class="fs-5 fw-bold">Bs {{ mov.saldo }}</div></div></div></div>
+</div>
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h6">Movimientos sin cerrar del {{ mov.fecha|date:"d/m/Y" }}</h2>
+  <table class="table table-sm mb-0"><thead><tr><th>Tipo</th><th>Detalle</th><th class="text-end">Monto (Bs)</th></tr></thead><tbody>
+    {% for p in mov.pagos %}<tr><td>Ingreso</td><td>{{ p.nro_comprobante }} · {{ p.reserva.codigo }} · {{ p.get_metodo_display }}</td><td class="text-end">{{ p.monto }}</td></tr>{% endfor %}
+    {% for r in mov.reembolsos %}<tr><td>Egreso</td><td>Reembolso {{ r.reserva.codigo }}</td><td class="text-end">-{{ r.monto_reembolso }}</td></tr>{% endfor %}
+    {% for p in mov.proveedores %}<tr><td>Egreso</td><td>Pago a {{ p.proveedor }}</td><td class="text-end">-{{ p.monto }}</td></tr>{% endfor %}
+    {% if not mov.pagos and not mov.reembolsos and not mov.proveedores %}<tr><td colspan="3" class="text-muted text-center">Sin movimientos pendientes.</td></tr>{% endif %}
+  </tbody></table>
+</div></div>
+{% if ya_cerrada %}
+<div class="alert alert-secondary">La caja de esta fecha ya fue cerrada. <a href="{% url 'payments:cierre_detalle' ya_cerrada.pk %}">Ver cierre</a></div>
+{% else %}
+<div class="card mb-4"><div class="card-body">
+  <form method="post" class="row g-2 align-items-end" novalidate>{% csrf_token %}
+    <div class="col-md-3"><label class="form-label">Fecha</label>{{ form.fecha }}{% for e in form.fecha.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-6"><label class="form-label">Observaciones</label>{{ form.observaciones }}</div>
+    <div class="col-md-3"><button class="btn btn-primary w-100">Cerrar caja</button></div>
+  </form>
+  <p class="small text-muted mt-2 mb-0">Cada movimiento queda marcado con el cierre y no vuelve a contarse. Una caja cerrada no se reabre.</p>
+</div></div>
+{% endif %}
+<h2 class="h5">Últimos cierres</h2>
+<div class="card"><div class="table-responsive"><table class="table table-sm table-hover mb-0">
+  <thead><tr><th>Fecha</th><th class="text-end">Ingresos</th><th class="text-end">Egresos</th><th class="text-end">Saldo</th><th>Realizado por</th><th></th></tr></thead><tbody>
+  {% for c in cierres %}<tr><td>{{ c.fecha|date:"d/m/Y" }}</td><td class="text-end">{{ c.total_ingresos }}</td><td class="text-end">{{ c.total_egresos }}</td>
+    <td class="text-end fw-bold">{{ c.saldo }}</td><td>{{ c.realizado_por }}</td><td class="text-end"><a href="{% url 'payments:cierre_detalle' c.pk %}">Ver</a></td></tr>
+  {% empty %}<tr><td colspan="6" class="text-center text-muted py-3">Sin cierres.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

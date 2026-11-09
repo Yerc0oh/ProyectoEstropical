@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Cronogramas{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Cronogramas de actividades</h1>
+<p class="text-muted">El cronograma del paquete es la base del itinerario que reciben todos los clientes que lo reservan.</p>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+  <thead><tr><th>Paquete</th><th>Destino</th><th>Salida</th><th>Días</th><th></th></tr></thead><tbody>
+  {% for p in paquetes %}
+  <tr><td>{{ p.nombre }}</td><td>{{ p.destino }}</td><td>{{ p.fecha_salida|date:"d/m/Y" }}</td><td>{{ p.duracion_dias }}</td>
+    <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'reservations:cronograma' p.pk %}">Editar cronograma</a></td></tr>
+  {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">Sin paquetes.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

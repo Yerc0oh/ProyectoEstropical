@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ view.titulo }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-10"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-3">{{ view.titulo }}</h1>
+  {% if object %}
+  <div class="alert alert-info small">
+    Cupos totales: <strong>{{ object.cupos_total }}</strong> ·
+    ocupados: <strong>{{ object.cupos_ocupados }}</strong> ·
+    disponibles: <strong>{{ object.cupos_disponibles }}</strong>.
+    Al cambiar el total, la disponibilidad se recalcula conservando los cupos
+    ocupados o comprometidos.
+  </div>
+  {% endif %}
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+
+    <h2 class="h5 mt-4">Componentes del paquete</h2>
+    <p class="text-muted small">Agrega varios elementos de cada tipo. Para quitar uno existente, marca “Eliminar”.</p>
+    {% for titulo, formset in formsets %}
+      {% include "packages/_formset.html" with titulo=titulo formset=formset %}
+    {% endfor %}
+
+    <button class="btn btn-primary mt-3" type="submit">Guardar</button>
+    <a class="btn btn-link mt-3" href="{% url view.url_listado %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll("[data-formset]").forEach(function (formset) {
+  const prefix = formset.dataset.prefix;
+  const total = formset.querySelector('input[name="' + prefix + '-TOTAL_FORMS"]');
+  const contenedor = formset.querySelector("[data-forms]");
+  const plantilla = formset.querySelector("template[data-empty-form]");
+  formset.querySelector("[data-add-form]").addEventListener("click", function () {
+    const html = plantilla.innerHTML.replace(/__prefix__/g, total.value);
+    const envoltura = document.createElement("div");
+    envoltura.innerHTML = html.trim();
+    contenedor.appendChild(envoltura.firstElementChild);
+    total.value = parseInt(total.value, 10) + 1;
+  });
+});
+</script>
+{% endblock %}

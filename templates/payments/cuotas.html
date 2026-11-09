@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Pagar en cuotas{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">Pagar en cuotas · {{ reserva.codigo }}</h1>
+  <p>Saldo a fraccionar: <b>Bs {{ saldo }}</b>. La reserva sale el {{ reserva.paquete.fecha_salida|date:"d/m/Y" }};
+    todas las cuotas deben vencer al menos 7 días antes.</p>
+  {% if cuotas %}
+  <table class="table table-sm"><thead><tr><th>N°</th><th>Vence</th><th class="text-end">Monto</th><th>Estado</th></tr></thead><tbody>
+    {% for c in cuotas %}<tr><td>{{ c.numero }}</td><td>{{ c.fecha_vencimiento|date:"d/m/Y" }}</td><td class="text-end">{{ c.monto }}</td><td>{{ c.get_estado_display }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% endif %}
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary">Crear plan de cuotas</button>
+    <a class="btn btn-link" href="{% url 'payments:estado_cuenta' reserva.pk %}">Volver</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

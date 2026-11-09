@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Documentos de proveedores{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0">Documentos de proveedores</h1>
+    {% if proveedor %}
+    <p class="text-muted mb-0">{{ proveedor.razon_social }} · NIT {{ proveedor.nit }}</p>
+    {% else %}
+    <p class="text-muted mb-0">Todos los proveedores</p>
+    {% endif %}
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'suppliers:gestion_lista' %}">Proveedores</a>
+</div>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-auto">
+    <label class="form-label" for="estado">Estado</label>
+    <select class="form-select" id="estado" name="estado">
+      <option value="">Todos</option>
+      {% for valor, etiqueta in estados %}
+      <option value="{{ valor }}" {% if estado == valor %}selected{% endif %}>{{ etiqueta }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-auto"><button class="btn btn-primary" type="submit">Filtrar</button></div>
+</form>
+
+<div class="card"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+  <thead><tr>
+    <th>Proveedor</th><th>Documento</th><th>Archivo</th><th>Cargado</th>
+    <th>Estado</th><th>Revisión</th><th></th>
+  </tr></thead>
+  <tbody>
+  {% for documento in documentos %}
+    <tr>
+      <td>{{ documento.proveedor.razon_social }}</td>
+      <td>{{ documento.tipo_documento }}</td>
+      <td><a href="{% url 'suppliers:documento_archivo' documento.pk %}">Descargar</a></td>
+      <td>{{ documento.fecha_carga|date:"d/m/Y H:i" }}</td>
+      <td>
+        {% if documento.estado == "pendiente" %}
+        <span class="badge text-bg-warning">Pendiente</span>
+        {% elif documento.estado == "aprobado" %}
+        <span class="badge text-bg-success">Aprobado</span>
+        {% else %}
+        <span class="badge text-bg-danger">Rechazado</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if documento.revisado_por %}
+        {{ documento.revisado_por }}<br>
+        <span class="text-muted small">{{ documento.fecha_revision|date:"d/m/Y H:i" }}</span>
+        {% else %}<span class="text-muted">—</span>{% endif %}
+      </td>
+      <td class="text-end">
+        <a class="btn btn-sm {% if documento.estado == 'pendiente' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+           href="{% url 'suppliers:gestion_documento_revisar' documento.pk %}">
+          {% if documento.estado == "pendiente" %}Revisar{% else %}Ver{% endif %}
+        </a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="text-center text-muted py-4">No hay documentos.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

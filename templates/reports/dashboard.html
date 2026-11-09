@@ -1,0 +1,260 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h2 class="fw-bold">Reportes administrativos</h2>
+            <p class="text-muted mb-0">
+                Estadísticas de reservas, pagos y reembolsos de Estropical.
+            </p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Filtrar por fechas</h5>
+
+            <form method="get" action="{% url 'reports:dashboard' %}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="desde">
+                            Fecha inicial
+                        </label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="desde"
+                            name="desde"
+                            value="{{ desde|date:'Y-m-d' }}"
+                        >
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="hasta">
+                            Fecha final
+                        </label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="hasta"
+                            name="hasta"
+                            value="{{ hasta|date:'Y-m-d' }}"
+                        >
+                    </div>
+
+                    <div class="col-md-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Filtrar
+                        </button>
+                        <a href="{% url 'reports:dashboard' %}"
+                           class="btn btn-outline-secondary">
+                            Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% else %}
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a
+            href="{% url 'reports:pdf' %}?desde={{ desde|date:'Y-m-d' }}&hasta={{ hasta|date:'Y-m-d' }}"
+            class="btn btn-danger"
+        >
+            Descargar PDF
+        </a>
+
+        <a
+            href="{% url 'reports:excel' %}?desde={{ desde|date:'Y-m-d' }}&hasta={{ hasta|date:'Y-m-d' }}"
+            class="btn btn-success"
+        >
+            Descargar Excel
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted">Total de reservas</p>
+                    <h3>{{ total_reservas }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted">Confirmadas</p>
+                    <h3>{{ reservas_confirmadas }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted">Pendientes</p>
+                    <h3>{{ reservas_pendientes }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted">Canceladas</p>
+                    <h3>{{ reservas_canceladas }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Resumen financiero</h4>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted">Ingresos registrados</p>
+                    <h3>{{ total_ingresos|floatformat:2 }} Bs</h3>
+                    <small>Pagos con estado completado</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted">Reembolsos procesados</p>
+                    <h3>{{ total_reembolsos|floatformat:2 }} Bs</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted">Flujo neto simplificado</p>
+                    <h3>{{ flujo_neto|floatformat:2 }} Bs</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Reservas por estado</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Estado</th>
+                                <th>Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in estados_reservas %}
+                            <tr>
+                                <td>{{ item.estado|capfirst }}</td>
+                                <td>{{ item.cantidad }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2">Sin registros</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Pagos por estado</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Estado</th>
+                                <th>Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in estados_pagos %}
+                            <tr>
+                                <td>{{ item.estado|capfirst }}</td>
+                                <td>{{ item.cantidad }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2">Sin registros</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Últimas reservas del periodo</h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Paquete</th>
+                            <th>Pasajeros</th>
+                            <th>Estado</th>
+                            <th>Total (Bs)</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas|slice:":20" %}
+                        <tr>
+                            <td>{{ reserva.codigo }}</td>
+                            <td>{{ reserva.paquete }}</td>
+                            <td>{{ reserva.cantidad_pasajeros }}</td>
+                            <td>{{ reserva.get_estado_display }}</td>
+                            <td>{{ reserva.total|floatformat:2 }}</td>
+                            <td>{{ reserva.fecha_reserva|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                No existen reservas para este periodo.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-muted small">
+        Los valores financieros son indicadores administrativos
+        simplificados y no representan una contabilidad completa.
+        Los filtros se aplican a la fecha correspondiente de
+        cada operación.
+    </p>
+
+    {% endif %}
+</div>
+{% endblock %}

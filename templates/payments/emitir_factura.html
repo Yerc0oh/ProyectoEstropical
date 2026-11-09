@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Emitir factura{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">Emitir factura · {{ reserva.codigo }}</h1>
+  <p class="text-muted">{{ reserva.cliente.nombre_completo }} · {{ reserva.paquete.nombre }}</p>
+  <p>Monto por facturar (pagos completados aún no facturados): <b>Bs {{ monto }}</b></p>
+  {% if monto > 0 %}
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary">Emitir factura</button>
+    <a class="btn btn-link" href="{% url 'payments:gestion_facturas' %}">Cancelar</a>
+  </form>
+  {% else %}<p class="text-muted mb-0">No hay nada por facturar en esta reserva.</p>{% endif %}
+</div></div></div></div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Revisar documento{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-3">Revisar documento</h1>
+
+  <dl class="row">
+    <dt class="col-sm-3">Proveedor</dt>
+    <dd class="col-sm-9">{{ documento.proveedor.razon_social }} (NIT {{ documento.proveedor.nit }})</dd>
+
+    <dt class="col-sm-3">Documento</dt>
+    <dd class="col-sm-9">{{ documento.tipo_documento }}</dd>
+
+    <dt class="col-sm-3">Archivo</dt>
+    <dd class="col-sm-9">
+      <a href="{% url 'suppliers:documento_archivo' documento.pk %}">Descargar archivo</a>
+    </dd>
+
+    <dt class="col-sm-3">Cargado</dt>
+    <dd class="col-sm-9">{{ documento.fecha_carga|date:"d/m/Y H:i" }}</dd>
+
+    <dt class="col-sm-3">Vence</dt>
+    <dd class="col-sm-9">{{ documento.fecha_vencimiento|date:"d/m/Y"|default:"—" }}</dd>
+
+    <dt class="col-sm-3">Estado</dt>
+    <dd class="col-sm-9">
+      {% if documento.estado == "pendiente" %}
+      <span class="badge text-bg-warning">Pendiente</span>
+      {% elif documento.estado == "aprobado" %}
+      <span class="badge text-bg-success">Aprobado</span>
+      {% else %}
+      <span class="badge text-bg-danger">Rechazado</span>
+      {% endif %}
+    </dd>
+  </dl>
+
+  {% if documento.estado == "pendiente" %}
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary" type="submit">Registrar revisión</button>
+    <a class="btn btn-link" href="{% url 'suppliers:gestion_documentos' %}">Cancelar</a>
+  </form>
+  {% else %}
+  <div class="alert alert-secondary">
+    Este documento ya fue revisado por
+    <strong>{{ documento.revisado_por }}</strong> el
+    {{ documento.fecha_revision|date:"d/m/Y H:i" }}. No puede aprobarse ni
+    rechazarse nuevamente.
+    {% if documento.observacion %}
+    <div class="mt-2">Motivo u observación: {{ documento.observacion }}</div>
+    {% endif %}
+  </div>
+  <a class="btn btn-outline-secondary" href="{% url 'suppliers:gestion_documentos' %}">Volver</a>
+  {% endif %}
+</div></div></div></div>
+{% endblock %}

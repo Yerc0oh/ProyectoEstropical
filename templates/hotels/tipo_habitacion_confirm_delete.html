@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Eliminar tipo de habitación{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">¿Eliminar «{{ object.nombre }}»?</h1>
+  <p class="text-muted">Hotel: <strong>{{ hotel.nombre }}</strong></p>
+  <p class="text-muted">Se eliminarán también las tarifas de este tipo de habitación. Si algún paquete lo usa, la operación se bloqueará.</p>
+  <form method="post">{% csrf_token %}
+    <button class="btn btn-danger" type="submit">Sí, eliminar</button>
+    <a class="btn btn-link" href="{% url 'hotels:gestion_habitaciones' hotel.pk %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

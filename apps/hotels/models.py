@@ -42,6 +42,11 @@ class TipoHabitacion(models.Model):
     def __str__(self):
         return f"{self.hotel} - {self.nombre}"
 
+    @property
+    def habitaciones_ocupadas(self):
+        """Habitaciones ya comprometidas (CU-16): total - disponibles."""
+        return self.habitaciones_total - self.habitaciones_disponibles
+
 
 class TarifaHabitacion(models.Model):
     tipo_habitacion = models.ForeignKey(TipoHabitacion, on_delete=models.CASCADE, related_name="tarifas")

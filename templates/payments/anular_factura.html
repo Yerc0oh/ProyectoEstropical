@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Anular factura{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">Anular factura N° {{ factura.nro_factura }}</h1>
+  <p class="text-muted">{{ factura.razon_social }} · NIT {{ factura.nit_cliente }} · Bs {{ factura.monto }}</p>
+  <p class="small">La factura queda registrada como anulada (no se borra) y el monto vuelve a quedar disponible para facturar.</p>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-danger">Anular factura</button>
+    <a class="btn btn-link" href="{% url 'payments:gestion_facturas' %}">Volver</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

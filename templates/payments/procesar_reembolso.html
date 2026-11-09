@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Procesar reembolso{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
+  <h1 class="h4">Procesar reembolso · {{ reembolso.reserva.codigo }}</h1>
+  <table class="table table-sm">
+    <tr><th>Pago original</th><td>{{ reembolso.pago.nro_comprobante }} · Bs {{ reembolso.pago.monto }} · {{ reembolso.pago.get_metodo_display }}</td></tr>
+    <tr><th>Penalidad retenida</th><td>Bs {{ reembolso.penalidad }}</td></tr>
+    <tr><th>Monto a devolver</th><td class="fw-bold">Bs {{ reembolso.monto_reembolso }}</td></tr>
+  </table>
+  <form method="post" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" href="{% url 'payments:reembolsos' %}">Volver</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

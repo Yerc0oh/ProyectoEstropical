@@ -36,3 +36,8 @@ class Vuelo(models.Model):
 
     def __str__(self):
         return f"{self.numero_vuelo} {self.origen.nombre} → {self.destino.nombre}"
+
+    @property
+    def asientos_ocupados(self):
+        """Asientos ya comprometidos (CU-16). Se derivan de total - disponibles."""
+        return self.asientos_total - self.asientos_disponibles

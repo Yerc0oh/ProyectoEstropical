@@ -1,0 +1,12 @@
+{# Campos de un formulario de pasajero en una fila. Uso: include con f=form #}
+{% if f.non_field_errors %}<div class="alert alert-danger py-1 small">{{ f.non_field_errors }}</div>{% endif %}
+{% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+<div class="row g-2">
+  {% for field in f.visible_fields %}{% if field.name != "DELETE" %}
+  <div class="{% if field.name == 'nombres' or field.name == 'apellidos' %}col-md-6{% else %}col-md-3{% endif %}">
+    <label class="form-label small mb-0" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+    {{ field }}
+    {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+  </div>
+  {% endif %}{% endfor %}
+</div>

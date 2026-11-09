@@ -1,0 +1,2 @@
+{# Uso: {% include "reservations/_estado.html" with estado=obj.estado texto=obj.get_estado_display %} #}
+<span class="badge {% if estado == 'confirmada' or estado == 'completado' or estado == 'pagada' or estado == 'procesado' or estado == 'emitida' or estado == 'pagado' or estado == 'completada' %}text-bg-success{% elif estado == 'pendiente' %}text-bg-warning{% elif estado == 'cancelada' or estado == 'fallido' or estado == 'rechazada' or estado == 'rechazado' or estado == 'anulada' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">{{ texto }}</span>

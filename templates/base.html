@@ -1,24 +1,119 @@
-{% load static %}<!DOCTYPE html>
+
+{% load static %}
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <meta name="theme-color" content="#083b56">
+
+  <meta name="description"
+        content="Descubre destinos, compara paquetes turísticos y organiza tu próxima aventura con Estropical.">
+
   <title>{% block title %}Estropical{% endblock %} · Tropical Tours</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'css/estropical.css' %}" rel="stylesheet">
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+
+  <!-- Fuente -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Estilos Estropical -->
+  <link
+    href="{% static 'css/estropical.css' %}"
+    rel="stylesheet">
+
   {% block extra_css %}{% endblock %}
 </head>
+
 <body>
+
   {% include "partials/_navbar.html" %}
-  <main class="container py-4">
+
+  <main class="{% block main_class %}container py-4{% endblock %}">
     {% include "partials/_messages.html" %}
     {% block content %}{% endblock %}
   </main>
-  <footer class="py-3 mt-4 text-center small">
-    © Tropical Tours Ltda. · Proyecto académico
+
+  <footer class="footer-est">
+    <div class="container">
+
+      <div class="row gy-4">
+
+        <div class="col-lg-5">
+          <h4 class="footer-brand">
+            <i class="bi bi-compass me-2"></i>
+            Estropical
+          </h4>
+
+          <p class="footer-description">
+            Descubre nuevos destinos, encuentra paquetes
+            turísticos y organiza tu próxima aventura
+            desde una sola plataforma.
+          </p>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <h6 class="footer-heading">Explorar</h6>
+
+          <a href="{% url 'destinations:catalogo' %}">
+            Destinos
+          </a>
+
+          <a href="{% url 'packages:catalogo' %}">
+            Paquetes turísticos
+          </a>
+        </div>
+
+        <div class="col-6 col-lg-4">
+          <h6 class="footer-heading">Estropical</h6>
+
+          <p class="footer-description mb-2">
+            Plataforma de gestión y reservas turísticas.
+          </p>
+
+          <span class="footer-small">
+            La Paz, Bolivia
+          </span>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        <span>
+          © {% now "Y" %} Tropical Tours Ltda.
+        </span>
+
+       
+      </div>
+
+    </div>
   </footer>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+  </script>
+
+  <!-- JavaScript del proyecto -->
   <script src="{% static 'js/main.js' %}"></script>
+
   {% block extra_js %}{% endblock %}
+
 </body>
 </html>

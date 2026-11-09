@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card"><div class="card-body">
+  <h1 class="h4 mb-3">{{ titulo }}</h1>
+  <p class="text-muted">Proveedor: <strong>{{ proveedor.razon_social }}</strong></p>
+
+  {% if original %}
+  <div class="alert alert-secondary small">
+    Nueva versión de <strong>{{ original.tipo_documento }}</strong> cargado el
+    {{ original.fecha_carga|date:"d/m/Y H:i" }}. El documento anterior y su
+    revisión se conservan en el historial.
+  </div>
+  {% endif %}
+
+  <div class="alert alert-info small">
+    Formatos permitidos: PDF, JPG y PNG. Tamaño máximo: 5 MB.
+    El archivo se valida por su contenido real, no solo por la extensión.
+  </div>
+
+  <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+    {% include "partials/_form.html" %}
+    <button class="btn btn-primary" type="submit">Cargar documento</button>
+    <a class="btn btn-link" href="{% url 'suppliers:mis_documentos' %}">Cancelar</a>
+  </form>
+</div></div></div></div>
+{% endblock %}

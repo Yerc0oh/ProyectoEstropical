@@ -15,4 +15,6 @@ urlpatterns = [
     path("gestion/destinos/nuevo/", views.DestinoCrear.as_view(), name="gestion_crear"),
     path("gestion/destinos/<int:pk>/editar/", views.DestinoEditar.as_view(), name="gestion_editar"),
     path("gestion/destinos/<int:pk>/eliminar/", views.DestinoEliminar.as_view(), name="gestion_eliminar"),
+    path("gestion/destinos/buscar-fotografias/", views.BuscarFotosWikimediaView.as_view(), name="buscar_fotografias"),
+
 ]

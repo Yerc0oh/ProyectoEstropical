@@ -1,0 +1,70 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h3>{{ preferencia.nombre }}</h3>
+        </div>
+
+        <div class="card-body">
+            <p>
+                <strong>Tipo de viaje:</strong>
+                {{ preferencia.get_tipo_viaje_display }}
+            </p>
+
+            <p>
+                <strong>Presupuesto:</strong>
+                Bs {{ preferencia.presupuesto_minimo }}
+                - Bs {{ preferencia.presupuesto_maximo }}
+            </p>
+
+            <p>
+                <strong>Duración:</strong>
+                {{ preferencia.duracion_minima }}
+                - {{ preferencia.duracion_maxima }} días
+            </p>
+
+            <p>
+                <strong>Cantidad de personas:</strong>
+                {{ preferencia.cantidad_personas }}
+            </p>
+
+            <p><strong>Destinos de interés:</strong></p>
+            <ul>
+                {% for destino in preferencia.destinos.all %}
+                <li>{{ destino.nombre }} - {{ destino.pais.nombre }}</li>
+                {% empty %}
+                <li>Sin destinos específicos.</li>
+                {% endfor %}
+            </ul>
+
+            <p>
+                <strong>Observaciones:</strong>
+                {{ preferencia.observaciones|default:"Sin observaciones" }}
+            </p>
+
+            <p>
+                <strong>Estado:</strong>
+                {% if preferencia.activa %}Activa{% else %}Inactiva{% endif %}
+            </p>
+
+            <p class="text-muted">
+                Última actualización:
+                {{ preferencia.fecha_actualizacion|date:"d/m/Y H:i" }}
+            </p>
+
+            <a href="{% url 'preferences:editar' preferencia.pk %}"
+               class="btn btn-primary">
+                Editar
+            </a>
+
+            <a href="{% url 'preferences:lista' %}"
+               class="btn btn-outline-secondary">
+                Volver
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

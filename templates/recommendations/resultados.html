@@ -1,0 +1,195 @@
+
+{% extends "base.html" %}
+
+{% block title %}Resultados de viaje | Estropical{% endblock %}
+
+{% block content %}
+<style>
+.resultado-hero {
+    background: linear-gradient(120deg, #123b78, #1974cb);
+    color: white;
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 25px;
+}
+.resultado-card {
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+}
+.resultado-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(20,60,100,.1);
+}
+.resultado-imagen {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    object-position: center;
+}
+.resultado-sin-imagen {
+    height: 220px;
+    background: #eaf3ff;
+    color: #1767c3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+}
+.resultado-precio {
+    font-size: 24px;
+    font-weight: 700;
+    color: #145ba9;
+}
+.resultado-motivo {
+    background: #edf8f2;
+    border: 1px solid #cfe9db;
+    border-radius: 12px;
+    padding: 14px;
+    color: #216245;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.resultado-dato {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid #edf1f5;
+    font-size: 13px;
+}
+</style>
+
+<div class="container py-4">
+
+    <a href="{% url 'recommendations:lista' %}"
+       class="btn btn-outline-secondary mb-3">
+        ← Volver a mis recomendaciones
+    </a>
+
+    <div class="resultado-hero">
+        <div class="small opacity-75 mb-2">
+            ✨ RECOMENDACIONES PERSONALIZADAS
+        </div>
+        <h1 class="h3 mb-2">
+            {{ preferencia.nombre }}
+        </h1>
+        <p class="mb-0 opacity-75">
+            Descubre los paquetes turísticos que
+            coinciden con tus preferencias.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        {% for resultado in resultados %}
+
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card resultado-card h-100">
+
+                {% with foto=resultado.paquete.destino.portada %}
+                    {% if foto %}
+                        <img
+                            src="{{ foto.archivo.url }}"
+                            class="resultado-imagen"
+                            alt="{{ resultado.paquete.destino.nombre }}"
+                            loading="lazy">
+                    {% else %}
+                        <div class="resultado-sin-imagen">
+                            ✈
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="card-body p-4 d-flex flex-column">
+
+                    <h2 class="h5 fw-bold mb-2">
+                        {{ resultado.paquete.nombre }}
+                    </h2>
+
+                    <p class="text-muted small mb-3">
+                        📍 {{ resultado.paquete.destino.nombre }}
+                    </p>
+
+                    <div class="mb-3">
+                        <div class="text-muted small">
+                            Precio por persona
+                        </div>
+                        <div class="resultado-precio">
+                            Bs {{ resultado.paquete.precio_persona }}
+                        </div>
+                    </div>
+
+                    <div class="resultado-dato">
+                        <span class="text-muted">Precio total</span>
+                        <strong>Bs {{ resultado.precio_total }}</strong>
+                    </div>
+
+                    <div class="resultado-dato">
+                        <span class="text-muted">Duración</span>
+                        <strong>{{ resultado.duracion }} días</strong>
+                    </div>
+
+                    <div class="resultado-dato">
+                        <span class="text-muted">Salida</span>
+                        <strong>
+                            {{ resultado.paquete.fecha_salida|date:"d/m/Y" }}
+                        </strong>
+                    </div>
+
+                    <div class="resultado-dato">
+                        <span class="text-muted">Cupos disponibles</span>
+                        <strong>
+                            {{ resultado.paquete.cupos_disponibles }}
+                        </strong>
+                    </div>
+
+                    <div class="resultado-motivo mt-3">
+                        <div class="fw-bold mb-1">
+                            ✨ ¿Por qué te recomendamos este viaje?
+                        </div>
+                        {{ resultado.motivo }}
+                    </div>
+
+                    <div class="mt-auto pt-3">
+                        <a
+                            href="{% url 'packages:detalle' resultado.paquete.pk %}"
+                            class="btn btn-primary w-100">
+                            Ver paquete turístico
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {% empty %}
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body py-5">
+                    <div class="display-5 mb-3">🔎</div>
+                    <h3 class="h5">
+                        No encontramos paquetes compatibles
+                    </h3>
+                    <p class="text-muted">
+                        Puedes modificar tu presupuesto,
+                        duración o destinos para obtener
+                        nuevas recomendaciones.
+                    </p>
+                    <a
+                        href="{% url 'preferences:editar' preferencia.pk %}"
+                        class="btn btn-outline-primary">
+                        Modificar preferencia
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
