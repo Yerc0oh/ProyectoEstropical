@@ -1,0 +1,156 @@
+<mxfile host="app.diagrams.net" agent="OpenCode" version="24.7.17">
+  <diagram id="arquitectura-sprint1" name="Arquitectura Sprint 1">
+    <mxGraphModel dx="1500" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Arquitectura — Estropical.com · Sprint 1" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="0" width="660" height="36" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tipo" value="&lt;b&gt;Tipo de arquitectura:&lt;/b&gt; monolito Django con patrón &lt;b&gt;MVT&lt;/b&gt; (Model–Template–View) y &lt;b&gt;arquitectura en capas&lt;/b&gt; (presentación, aplicación, dominio y persistencia).&lt;br&gt;Modelo &lt;b&gt;cliente–servidor&lt;/b&gt; con &lt;b&gt;renderizado en servidor (SSR)&lt;/b&gt;, sesiones y formularios HTML; sin API REST separada ni SPA." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="280" y="40" width="720" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1" value="Visitante anónimo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="120" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="Cliente&lt;br&gt;(grupo Cliente)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="200" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="Administrador&lt;br&gt;(grupo Administrador / superusuario)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="280" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Navegador web&lt;br&gt;HTML5 · Bootstrap 5 · JavaScript (paginación, filtros y validación del formulario de destinos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="120" width="720" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="webserver" value="Servidor web / HTTPS&lt;br&gt;runserver en desarrollo · nginx + Gunicorn en producción" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="205" width="720" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="presentation" value="Capa de presentación — Plantillas Django (templates/)&lt;br&gt;base.html · partials/ · core/home.html · accounts/* · destinations/* · Bootstrap 5 · static/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="285" width="720" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="middleware" value="Middleware&lt;br&gt;Security · Session · Common · CSRF · Authentication&lt;br&gt;LoginRequired (deny by default) · Messages · XFrame" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="375" width="350" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="urlconf" value="URLconf&lt;br&gt;config/urls.py → core · accounts (/cuentas/)&lt;br&gt;destinations (/destinos/ y /gestion/destinos/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="375" width="350" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="views" value="Capa de aplicación — Vistas y formularios" style="swimlane;html=1;startSize=28;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="280" y="485" width="720" height="175" as="geometry" />
+        </mxCell>
+        <mxCell id="vcore" value="core&lt;br&gt;home&lt;br&gt;access (roles)&lt;br&gt;views_base (CRUD)&lt;br&gt;BootstrapFormMixin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="300" y="523" width="205" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="vaccounts" value="accounts&lt;br&gt;registro · activar · reenviar&lt;br&gt;login / logout&lt;br&gt;password reset&lt;br&gt;perfil · correo · contraseña&lt;br&gt;usuarios · roles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="525" y="523" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="vdest" value="destinations&lt;br&gt;CatalogoDestinosView&lt;br&gt;DetalleDestinoView&lt;br&gt;Destino Lista/Crear/Editar/Eliminar&lt;br&gt;BuscarFotosWikimediaView" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="760" y="523" width="220" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="services" value="Capa de lógica de negocio — servicios y componentes compartidos" style="swimlane;html=1;startSize=28;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="280" y="700" width="720" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="saccounts" value="accounts.services&lt;br&gt;registrar_cliente · enviar_correo_activacion&lt;br&gt;solicitar_cambio_correo · confirmar_cambio_correo&lt;br&gt;obtener_perfil&lt;br&gt;accounts.tokens: ActivationTokenGenerator,&lt;br&gt;EmailChangeTokenGenerator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="300" y="736" width="340" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="score" value="core.access&lt;br&gt;ROL_ADMIN · ROL_CLIENTE · public&lt;br&gt;es_administrador · es_cliente&lt;br&gt;admin_required / AdminRequiredMixin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="736" width="320" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orm" value="Capa de dominio — Modelos Django (ORM)" style="swimlane;html=1;startSize=28;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="280" y="860" width="720" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="maccounts" value="accounts.Perfil&lt;br&gt;usuario (1:1 User) · nombres · apellidos&lt;br&gt;documento · nacimiento · contacto&lt;br&gt;correo_pendiente + nonce" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="300" y="898" width="330" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="mdest" value="destinations&lt;br&gt;Pais · Categoria · Destino · DestinoFoto&lt;br&gt;Destino.pais / categoria (PROTECT)&lt;br&gt;portada única por destino" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="898" width="330" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db" value="PostgreSQL 14+ (estropical_db)&lt;br&gt;Tablas: perfil · pais · categoria · destino · destino_foto&lt;br&gt;Tablas de Django: auth_user · auth_group · auth_user_groups · django_session&lt;br&gt;Restricciones UNIQUE y de integridad referencial (FK, PROTECT / CASCADE)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1010" width="720" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="smtp" value="Servidor de correo&lt;br&gt;SMTP real o consola (EMAIL_URL)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="205" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="media" value="Almacenamiento media/&lt;br&gt;fotos de destinos (destinos/)&lt;br&gt;servidas como archivos públicos en desarrollo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="300" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" value="Django admin /admin/&lt;br&gt;solo superusuarios (is_staff)&lt;br&gt;gestión de User, Group y DestinoFoto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="410" width="240" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="wikimedia" value="API de Wikimedia Commons&lt;br&gt;búsqueda de fotografías de destinos&lt;br&gt;(CU-08, opcional)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="515" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="&lt;b&gt;Capas representadas:&lt;/b&gt;&lt;br&gt;1. Presentación (plantillas + estáticos)&lt;br&gt;2. Aplicación (middleware, URLconf, vistas y formularios)&lt;br&gt;3. Lógica de negocio (services, tokens y access)&lt;br&gt;4. Dominio (modelos / ORM)&lt;br&gt;5. Persistencia (PostgreSQL)&lt;br&gt;&lt;b&gt;Alcance:&lt;/b&gt; CU-01 a CU-08 del Sprint 1 (cuentas, roles, perfil, destinos).&lt;br&gt;No incluye hoteles, vuelos, paquetes, reservas ni pagos." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="650" width="240" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_a1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;" edge="1" parent="1" source="a1" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a2" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;fontSize=10;" edge="1" parent="1" source="a2" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;" edge="1" parent="1" source="a3" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="HTTP / HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="browser" target="webserver">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="sirve estáticos (CSS/JS)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;fontSize=9;dashed=1;" edge="1" parent="1" source="webserver" target="presentation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="petición HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="webserver" target="middleware">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="middleware" target="urlconf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="resuelve vista" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="urlconf" target="views">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="invoca" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="views" target="services">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="usa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="services" target="orm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="SQL (ORM)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="orm" target="db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="envía enlaces de activación, recuperación y cambio de correo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=9;" edge="1" parent="1" source="saccounts" target="smtp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="archivos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="1" source="vdest" target="media">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="consulta HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;fontSize=9;dashed=1;" edge="1" parent="1" source="vdest" target="wikimedia">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="admin/ (superusuario)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="1" source="urlconf" target="admin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="dependencia transversal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;dashed=1;fontSize=9;" edge="1" parent="1" source="score" target="views">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" value="renderiza plantilla" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=9;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="views" target="presentation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="respuesta HTML" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=9;" edge="1" parent="1" source="presentation" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

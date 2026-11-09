@@ -1,0 +1,225 @@
+<mxfile host="app.diagrams.net" agent="OpenCode" version="24.7.17">
+  <diagram id="arquitectura-general" name="Arquitectura general">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Arquitectura — Estropical.com (Sprints 1–6)" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="0" width="720" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1" value="Visitante anónimo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="70" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="Cliente&lt;br&gt;(grupo Cliente)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="150" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="Administrador&lt;br&gt;(grupo Administrador / superusuario)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="230" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="Proveedor&lt;br&gt;(Proveedor.usuario)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="310" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Navegador web&lt;br&gt;HTML5 · Bootstrap 5 · JavaScript (comparador, formsets, chatbot)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="70" width="720" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="webserver" value="Servidor web / HTTPS&lt;br&gt;nginx + Gunicorn en producción · runserver en desarrollo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="160" width="720" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="presentation" value="Capa de presentación&lt;br&gt;Plantillas Django (templates/) · Bootstrap 5 · archivos estáticos (static/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="250" width="720" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="middleware" value="Middleware&lt;br&gt;Security · Session · Common · CSRF · Authentication&lt;br&gt;LoginRequired (deny by default) · Messages · XFrame" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="350" width="350" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="urlconf" value="URLconf&lt;br&gt;config/urls.py · 15 apps con namespace propio" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="650" y="350" width="350" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="views" value="Capa de aplicación — Vistas y formularios" style="swimlane;html=1;startSize=28;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="280" y="460" width="720" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="views12" value="Sprints 1–2&lt;br&gt;accounts · destinations · suppliers&lt;br&gt;hotels · flights · packages&lt;br&gt;CBV genéricas, FBV y formularios" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="300" y="498" width="330" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="views36" value="Sprints 3–6&lt;br&gt;reservations · payments · preferences&lt;br&gt;recommendations · reports · notifications&lt;br&gt;support · reviews" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="498" width="330" height="105" as="geometry" />
+        </mxCell>
+
+        <mxCell id="services" value="Capa de lógica de negocio — services.py y utilidades" style="swimlane;html=1;startSize=28;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="280" y="650" width="720" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="svc12" value="accounts.services · tokens&lt;br&gt;suppliers.services · validators&lt;br&gt;core.disponibilidad&lt;br&gt;core.access (roles y permisos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="300" y="688" width="210" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="svc34" value="reservations.services&lt;br&gt;(cupos, pasajeros, itinerarios,&lt;br&gt;cancelaciones)&lt;br&gt;payments.services · pasarela_simulada" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="525" y="688" width="220" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="svc56" value="recommendations.services /&lt;br&gt;chatbot_service · Gemini&lt;br&gt;reports.services&lt;br&gt;notifications.services · core.pdf" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="760" y="688" width="220" height="105" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orm" value="Capa de dominio — Modelos Django (ORM)" style="swimlane;html=1;startSize=28;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="280" y="840" width="720" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="orm12" value="Sprints 1–2&lt;br&gt;Perfil · Pais / Categoria / Destino · Proveedor&lt;br&gt;Hotel / TipoHabitacion / Tarifa · Vuelo · Paquete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="300" y="878" width="330" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="orm36" value="Sprints 3–6&lt;br&gt;Reserva / Pasajero · Pago / Cuota / Factura&lt;br&gt;Preferencia · Resena · TicketSoporte · Notificacion" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="650" y="878" width="330" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db" value="PostgreSQL 14+ (estropical_db)&lt;br&gt;Tablas y restricciones · funciones fn_penalidad_cancelacion, fn_cerrar_caja, fn_ajustar_cupos&lt;br&gt;trigger trg_reserva_cupos · vistas v_saldo_reserva, v_reporte_ventas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1000" width="720" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="smtp" value="Servidor de correo&lt;br&gt;SMTP real o consola (EMAIL_URL)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="250" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="gemini" value="Google Gemini API&lt;br&gt;Sprint 5 · GEMINI_API_KEY" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="350" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="media" value="Almacenamiento media/&lt;br&gt;fotos públicas · documentos de proveedores privados&lt;br&gt;(solo suppliers:documento_archivo)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="470" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" value="Django admin /admin/&lt;br&gt;solo superusuarios (is_staff)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="600" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="corex" value="apps.core (transversal)&lt;br&gt;access · views_base · forms&lt;br&gt;disponibilidad · pdf · templatetags" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="700" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_a1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;" edge="1" parent="1" source="a1" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a2" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;fontSize=10;" edge="1" parent="1" source="a2" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;" edge="1" parent="1" source="a3" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_a4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;" edge="1" parent="1" source="a4" target="browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="HTTP / HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="browser" target="webserver">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="proxy · sirve estáticos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="webserver" target="presentation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="petición" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="presentation" target="middleware">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="middleware" target="urlconf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="resuelve vista" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="urlconf" target="views">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="invoca" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="views" target="services">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="usa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="services" target="orm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="SQL (ORM)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="1" source="orm" target="db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="trigger / funciones" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;dashed=1;fontSize=10;" edge="1" parent="1" source="db" target="orm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="correo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="1" source="svc12" target="smtp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="API REST HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="1" source="svc56" target="gemini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="archivos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="1" source="svc12" target="media">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="media pública" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;fontSize=10;" edge="1" parent="1" source="webserver" target="media">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" value="admin/ (superusuario)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="1" source="urlconf" target="admin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="dependencia transversal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;dashed=1;fontSize=10;" edge="1" parent="1" source="corex" target="views">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="despliegue" name="Despliegue">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="d0" />
+        <mxCell id="d1" parent="d0" />
+
+        <mxCell id="dt" value="Despliegue — Estropical.com" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" vertex="1" parent="d1">
+          <mxGeometry x="420" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dcliente" value="Cliente&lt;br&gt;Navegador web" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="d1">
+          <mxGeometry x="80" y="150" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dnginx" value="nginx&lt;br&gt;TLS/HTTPS · archivos estáticos&lt;br&gt;media pública (excepto proveedores/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="d1">
+          <mxGeometry x="360" y="140" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dgunicorn" value="Gunicorn + Django&lt;br&gt;config.settings.prod&lt;br&gt;DEBUG=False · HSTS · cookies seguras" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="d1">
+          <mxGeometry x="700" y="130" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dpostgres" value="PostgreSQL 14+&lt;br&gt;estropical_db&lt;br&gt;funciones · trigger · vistas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#b1ddf0;strokeColor=#10739e;fontSize=12;" vertex="1" parent="d1">
+          <mxGeometry x="1040" y="140" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dmedia" value="Sistema de archivos&lt;br&gt;media/&lt;br&gt;documentos privados fuera del acceso directo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="d1">
+          <mxGeometry x="700" y="360" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dsmtp" value="Servidor SMTP&lt;br&gt;EMAIL_URL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="d1">
+          <mxGeometry x="1040" y="360" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dgemini" value="Google Gemini API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="d1">
+          <mxGeometry x="1040" y="480" width="240" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ddev" value="Desarrollo local: python manage.py runserver&lt;br&gt;config.settings.dev · DEBUG=True · media servida por Django&lt;br&gt;correo por consola (consolemail://)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;dashed=1;" vertex="1" parent="d1">
+          <mxGeometry x="360" y="540" width="580" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="de1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="d1" source="dcliente" target="dnginx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de2" value="proxy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="d1" source="dnginx" target="dgunicorn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de3" value="SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.5;fontSize=10;" edge="1" parent="d1" source="dgunicorn" target="dpostgres">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de4" value="archivos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="d1" source="dgunicorn" target="dmedia">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de5" value="correo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="d1" source="dgunicorn" target="dsmtp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de6" value="API REST" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1.2;fontSize=10;" edge="1" parent="d1" source="dgunicorn" target="dgemini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de7" value="estáticos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=1;fontSize=10;" edge="1" parent="d1" source="dnginx" target="dmedia">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

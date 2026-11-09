@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Estropical">
+  <rect width="64" height="64" rx="14" fill="#083b56"/>
+  <circle cx="44" cy="20" r="8" fill="#f2b705"/>
+  <path d="M6 42c6 0 6-5 12-5s6 5 12 5 6-5 12-5 6 5 12 5v9c-6 0-6-5-12-5s-6 5-12 5-6-5-12-5-6 5-12 5z" fill="#2ec4b6"/>
+  <path d="M11 34l17-14 4 2-8 9 14-3 3 3-21 8z" fill="#ffffff"/>
+</svg>

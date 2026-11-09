@@ -11,6 +11,8 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+# Orígenes de confianza para peticiones POST por HTTPS (p. ej. https://mi-app.onrender.com).
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -42,6 +44,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise sirve los archivos estáticos directamente desde la app WSGI
+    # (necesario en Render/Heroku, donde no hay nginx delante).
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -120,11 +125,19 @@ USE_I18N = True
 USE_TZ = True
 
 # ---------------------------------------------------------------- Archivos
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# WhiteNoise: comprime los estáticos y los sirve desde el proceso WSGI.
+# Se usa CompressedStaticFilesStorage (sin manifest) para que el arranque no
+# falle si collectstatic no se ejecutó exactamente en el mismo build.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 # CU-13: límite para documentos de proveedores (5 MB por defecto).
 DOCUMENTO_PROVEEDOR_MAX_BYTES = env.int(
     "DOCUMENTO_PROVEEDOR_MAX_BYTES", default=5 * 1024 * 1024)
