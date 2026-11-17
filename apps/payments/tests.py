@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.reservations.tests import Escenario
 
 from . import services
-from .models import CierreCaja, Cuota, Factura, Pago, PagoProveedor, SaldoReserva
+from .models import CierreCaja, Cuota, Factura, IntentoPagoQR, Pago, PagoProveedor, SaldoReserva
 
 TARJETA_OK = "4111111111111111"
 
@@ -31,7 +31,8 @@ class PagosTests(Escenario):
     def test_pago_desde_la_web_y_comprobante(self):
         reserva = self.reservar(1)
         self.client.force_login(self.cliente_u)
-        r = self.client.post(reverse("payments:pagar", args=[reserva.pk]), {"metodo": "qr"})
+        r = self.client.post(reverse("payments:pagar", args=[reserva.pk]),
+                             {"metodo": "tarjeta", "numero_tarjeta": TARJETA_OK, "vencimiento": "12/39", "cvv": "123"})
         pago = Pago.objects.get()
         self.assertRedirects(r, reverse("payments:pago_resultado", args=[pago.pk]))
         r = self.client.get(reverse("payments:comprobante_pdf", args=[pago.pk]))
@@ -149,3 +150,63 @@ class CajaTests(Escenario):
         for n in nombres:
             self.assertEqual(self.client.get(reverse(f"payments:{n}")).status_code, 200, n)
         self.assertEqual(Factura.objects.count(), 0)
+
+
+
+class PagoQRTests(Escenario):
+    """El QR lleva un enlace con token único: se confirma una sola vez, desde cualquier celular."""
+
+    def test_qr_se_paga_al_confirmar_el_enlace(self):
+        reserva = self.reservar(1)
+        self.client.force_login(self.cliente_u)
+        r = self.client.get(reverse("payments:pagar", args=[reserva.pk]))
+        intento = IntentoPagoQR.objects.get(reserva=reserva, estado="pendiente")
+        self.assertContains(r, intento.token)                       # el enlace está dentro del QR
+        url_estado = reverse("payments:qr_estado", args=[intento.token])
+        self.assertEqual(self.client.get(url_estado).json()["estado"], "pendiente")
+        celular = self.client_class()                               # el celular no tiene sesión iniciada
+        url = reverse("payments:qr_confirmar", args=[intento.token])
+        self.assertEqual(celular.get(url).status_code, 200)
+        celular.post(url)
+        intento.refresh_from_db()
+        self.assertEqual(intento.estado, "pagado")
+        self.assertEqual(intento.pago.metodo, "qr")
+        self.assertEqual(intento.pago.estado, Pago.Estado.COMPLETADO)
+        self.assertEqual(services.saldo_pendiente(reserva), 0)
+        datos = self.client.get(url_estado).json()                  # la computadora se entera
+        self.assertEqual(datos["estado"], "pagado")
+        self.assertIn("url_resultado", datos)
+        with self.assertRaises(ValidationError):                    # no se puede pagar dos veces
+            services.confirmar_intento_qr(intento.token)
+
+    def test_qr_vencido_o_reemplazado(self):
+        reserva = self.reservar(1)
+        viejo = services.crear_intento_qr(reserva)
+        nuevo = services.crear_intento_qr(reserva)
+        viejo.refresh_from_db()
+        self.assertEqual(viejo.estado, "anulado")
+        with self.assertRaises(ValidationError):
+            services.confirmar_intento_qr(viejo.token)
+        IntentoPagoQR.objects.filter(pk=nuevo.pk).update(fecha_expiracion=timezone.now())
+        with self.assertRaises(ValidationError):
+            services.confirmar_intento_qr(nuevo.token)
+        nuevo.refresh_from_db()
+        self.assertEqual(nuevo.estado, "vencido")
+        self.assertFalse(Pago.objects.exists())
+
+    def test_qr_respeta_cuotas_y_cambios_de_monto(self):
+        reserva = self.reservar(1)
+        intento = services.crear_intento_qr(reserva)               # QR por el saldo completo (Bs 1000)
+        services.crear_plan_cuotas(reserva, 2)                     # ahora toca pagar solo la cuota 1
+        with self.assertRaises(ValidationError):
+            services.confirmar_intento_qr(intento.token)
+        intento = services.crear_intento_qr(reserva)
+        self.assertEqual(intento.monto, Decimal("500.00"))
+        pago = services.confirmar_intento_qr(intento.token)
+        self.assertEqual(pago.cuota.estado, Cuota.Estado.PAGADA)
+
+    def test_estado_del_qr_solo_para_el_duenio(self):
+        reserva = self.reservar(1)
+        intento = services.crear_intento_qr(reserva)
+        self.client.force_login(self.otro_u)
+        self.assertEqual(self.client.get(reverse("payments:qr_estado", args=[intento.token])).status_code, 404)
