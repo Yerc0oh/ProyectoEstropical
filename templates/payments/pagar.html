@@ -7,9 +7,7 @@
   <p class="fs-4 fw-bold mb-1">Bs {{ monto }}</p>
   <p class="small text-muted">{% if cuota %}Cuota {{ cuota.numero }} (vence {{ cuota.fecha_vencimiento|date:"d/m/Y" }}).{% else %}Saldo total de la reserva.
     <a href="{% url 'payments:cuotas' reserva.pk %}">¿Prefieres pagar en cuotas?</a>{% endif %}</p>
-  <div class="alert alert-light border small mb-3"><i class="bi bi-shield-lock"></i> Pago seguro. Los datos de tu tarjeta no se almacenan en nuestros servidores.</div>
-  <div class="alert alert-info small">Entorno académico: los pagos se procesan con una <b>pasarela simulada</b>. No se cobra dinero real
-    ni se guardan datos de la tarjeta. Tarjeta de prueba aprobada: 4111 1111 1111 1111 · rechazada: 4000 0000 0000 0002.</div>
+  <div class="alert alert-light border small mb-3" title="Aprobada: 4111 1111 1111 1111 · Rechazada: 4000 0000 0000 0002 · Vence 12/30 · CVV 123"><i class="bi bi-shield-lock"></i> Pago seguro. Los datos de tu tarjeta no se almacenan en nuestros servidores.</div> 
   <form method="post" novalidate id="form-pago">{% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
     <div class="mb-3">
