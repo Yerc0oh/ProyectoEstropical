@@ -89,12 +89,26 @@ class Reserva(models.Model):
         COMPLETADA = "completada", "Completada"
         EXPIRADA = "expirada", "Expirada"
 
+    class Tipo(models.TextChoices):
+        PAQUETE = "paquete", "Paquete turístico"
+        VUELO = "vuelo", "Vuelo"
+        HOTEL = "hotel", "Hotel"
+
     ACTIVAS = [Estado.PENDIENTE, Estado.CONFIRMADA]   # ocupan cupos (ver trigger trg_reserva_cupos)
 
     codigo = models.CharField(max_length=12, unique=True)
     cliente = models.ForeignKey(Perfil, on_delete=models.PROTECT, related_name="reservas")
     creada_por = models.ForeignKey(Perfil, on_delete=models.PROTECT, related_name="reservas_creadas")
-    paquete = models.ForeignKey("packages.Paquete", on_delete=models.PROTECT, related_name="reservas")
+    tipo = models.CharField(max_length=10, choices=Tipo.choices, default=Tipo.PAQUETE)
+    paquete = models.ForeignKey("packages.Paquete", on_delete=models.PROTECT, related_name="reservas",
+                                null=True, blank=True)
+    vuelo = models.ForeignKey("flights.Vuelo", on_delete=models.PROTECT, related_name="reservas",
+                              null=True, blank=True)                     # reserva de vuelo solo
+    tipo_habitacion = models.ForeignKey("hotels.TipoHabitacion", on_delete=models.PROTECT,
+                                        related_name="reservas", null=True, blank=True)  # hotel solo
+    fecha_inicio = models.DateField(null=True, blank=True)    # hotel: fecha de entrada
+    fecha_fin = models.DateField(null=True, blank=True)       # hotel: fecha de salida
+
     promocion = models.ForeignKey(Promocion, on_delete=models.PROTECT, null=True, blank=True,
                                   related_name="reservas")
     cantidad_pasajeros = models.SmallIntegerField()
@@ -131,6 +145,12 @@ class Reserva(models.Model):
                 condition=Q(estado="cancelada", fecha_cancelacion__isnull=False)
                 | (~Q(estado="cancelada") & Q(fecha_cancelacion__isnull=True)),
                 name="ck_reserva_cancelacion"),
+            models.CheckConstraint(   # cada tipo de reserva apunta a su servicio
+                condition=Q(tipo="paquete", paquete__isnull=False)
+                | Q(tipo="vuelo", vuelo__isnull=False)
+                | Q(tipo="hotel", tipo_habitacion__isnull=False, fecha_inicio__isnull=False,
+                    fecha_fin__gt=F("fecha_inicio")),
+                name="ck_reserva_tipo_servicio"),
         ]
         indexes = [models.Index(fields=["estado"], name="ix_reserva_estado")]
 
@@ -150,12 +170,38 @@ class Reserva(models.Model):
         return self.estado in self.ACTIVAS
 
     @property
-    def ya_salio(self):
-        return self.paquete.fecha_salida <= timezone.localdate()
+    def servicio_nombre(self):
+        """Lo que se reservó, para mostrar en pantallas, facturas y reportes."""
+        if self.tipo == self.Tipo.VUELO:
+            return f"Vuelo {self.vuelo.numero_vuelo} {self.vuelo.origen} - {self.vuelo.destino}"
+        if self.tipo == self.Tipo.HOTEL:
+            return f"{self.tipo_habitacion.hotel.nombre} - {self.tipo_habitacion.nombre}"
+        return self.paquete.nombre
 
     @property
-    def puede_modificarse(self):
-        return self.esta_activa and not self.ya_salio
+    def fecha_viaje(self):
+        """Fecha en que empieza el servicio (sirve para la penalidad, las cuotas y «ya salió»)."""
+        if self.tipo == self.Tipo.VUELO:
+            return timezone.localtime(self.vuelo.fecha_salida).date()
+        if self.tipo == self.Tipo.HOTEL:
+            return self.fecha_inicio
+        return self.paquete.fecha_salida
+
+    @property
+    def fecha_regreso(self):
+        if self.tipo == self.Tipo.VUELO:
+            return timezone.localtime(self.vuelo.fecha_llegada).date()
+        if self.tipo == self.Tipo.HOTEL:
+            return self.fecha_fin
+        return self.paquete.fecha_retorno
+
+    @property
+    def ya_salio(self):
+        return self.fecha_viaje <= timezone.localdate()
+
+    @property
+    def puede_modificarse(self):   # cambiar pasajeros solo aplica a paquetes
+        return self.esta_activa and not self.ya_salio and self.tipo == self.Tipo.PAQUETE
 
     @property
     def puede_cancelarse(self):

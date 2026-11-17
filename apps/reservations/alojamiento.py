@@ -35,23 +35,31 @@ def sincronizar_alojamiento(reserva):
     Agrupa alternativas del mismo hotel y estancia; diferentes hoteles/fechas
     se consideran etapas diferentes, cada una alojando a todos los pasajeros.
     """
-    reserva = Reserva.objects.select_for_update().select_related("paquete").get(pk=reserva.pk)
+
+    reserva = Reserva.objects.select_for_update(of=("self",)).select_related("paquete").get(pk=reserva.pk)
     if reserva.estado not in ACTIVAS:
         return
-    componentes = list(PaqueteHotel.objects.filter(paquete_id=reserva.paquete_id)
-                       .select_related("tipo_habitacion", "tipo_habitacion__hotel")
-                       .order_by("tipo_habitacion_id"))
-    if not componentes:
-        # Paquetes sin hoteles siguen reservables: no se inventa alojamiento.
+    if reserva.tipo == Reserva.Tipo.HOTEL:
+        # Hotel solo: una estadía con el tipo de habitación y las fechas que eligió el cliente.
+        estadias = [(reserva.tipo_habitacion_id, reserva.fecha_inicio, reserva.fecha_fin)]
+    elif reserva.tipo == Reserva.Tipo.PAQUETE:
+        componentes = list(PaqueteHotel.objects.filter(paquete_id=reserva.paquete_id)
+                           .select_related("tipo_habitacion", "tipo_habitacion__hotel")
+                           .order_by("tipo_habitacion_id"))
+        estadias = [(c.tipo_habitacion_id, *_fechas(reserva.paquete, c)) for c in componentes]
+    else:
+        estadias = []          # vuelo solo: no lleva alojamiento
+    if not estadias:
+        # Paquetes sin hoteles (o vuelos solos) siguen reservables: no se inventa alojamiento.
         AsignacionHabitacion.objects.filter(reserva=reserva).delete()
         return
-    ids = sorted({c.tipo_habitacion_id for c in componentes})
+    ids = sorted({tid for tid, _, _ in estadias})
     tipos = {t.pk: t for t in TipoHabitacion.objects.select_for_update()
              .filter(pk__in=ids).order_by("pk")}
     grupos = defaultdict(list)
-    for c in componentes:
-        entrada, salida = _fechas(reserva.paquete, c)
-        grupos[(tipos[c.tipo_habitacion_id].hotel_id, entrada, salida)].append(c.tipo_habitacion_id)
+    for tipo_id, entrada, salida in estadias:
+        grupos[(tipos[tipo_id].hotel_id, entrada, salida)].append(tipo_id)
+
     # Diferentes etapas no pueden solaparse. Alternativas del mismo hotel y
     # fechas exactas ya se agruparon como una sola etapa.
     etapas = sorted(grupos)

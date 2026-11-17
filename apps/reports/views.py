@@ -121,7 +121,7 @@ def exportar_excel(request):
     for reserva in reporte["reservas"].iterator():
         hoja_reservas.append([
             reserva.codigo,
-            str(reserva.paquete),
+            reserva.servicio_nombre,
             reserva.get_estado_display(),
             reserva.cantidad_pasajeros,
             float(reserva.total or 0),
@@ -303,7 +303,7 @@ def exportar_pdf(request):
     for reserva in reporte["reservas"][:25]:
         filas.append([
             Paragraph(str(reserva.codigo), estilos["BodyText"]),
-            Paragraph(str(reserva.paquete), estilos["BodyText"]),
+            Paragraph(reserva.servicio_nombre, estilos["BodyText"]),
             reserva.get_estado_display(),
             str(reserva.cantidad_pasajeros),
             formato_monto(reserva.total or 0),

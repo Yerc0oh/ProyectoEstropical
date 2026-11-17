@@ -57,11 +57,13 @@
 
             <hr>
 
-            <div class="alert alert-info">
-                Este vuelo se encuentra disponible para consulta.
-                La reserva individual se habilitará al integrar
-                el módulo de reservas.
-            </div>
+            {% if vuelo.asientos_disponibles > 0 %}
+            <a class="btn btn-primary btn-lg" href="{% url 'reservations:reservar_vuelo' vuelo.pk %}">
+                <i class="bi bi-airplane"></i> Reservar este vuelo
+            </a>
+            {% else %}
+            <div class="alert alert-warning mb-0">Este vuelo ya no tiene asientos disponibles.</div>
+            {% endif %}
 
         </div>
     </div>

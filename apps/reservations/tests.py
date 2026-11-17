@@ -224,3 +224,76 @@ class ItinerarioYClientesTests(Escenario):
         self.assertRedirects(r, reverse("reservations:cliente_detalle", args=[perfil.pk]))
         self.assertTrue(perfil.usuario.groups.filter(name=ROL_CLIENTE).exists())
         self.assertEqual(perfil.usuario.username, "nuevo@test.com")
+
+
+
+class VueloYHotelSoloTests(Escenario):
+    """CU-18 ampliado: reservar un vuelo solo o un hotel solo, y pagarlo/cancelarlo igual que un paquete."""
+
+    def setUp(self):
+        super().setUp()
+        from apps.hotels.models import Hotel, TarifaHabitacion, TipoHabitacion
+        hotelero = Proveedor.objects.create(razon_social="Hoteles Test", nit="2002", tipo="hotel")
+        self.hotel = Hotel.objects.create(proveedor=hotelero, destino=self.cuz, nombre="Hotel Inti", estrellas=3)
+        self.doble = TipoHabitacion.objects.create(hotel=self.hotel, nombre="Doble", capacidad=2,
+                                                   habitaciones_total=1, habitaciones_disponibles=1)
+        hoy = timezone.localdate()
+        TarifaHabitacion.objects.create(tipo_habitacion=self.doble, fecha_inicio=hoy,
+                                        fecha_fin=hoy + timedelta(days=90), precio_noche=Decimal("300"))
+        self.entrada = hoy + timedelta(days=20)
+
+    def test_reservar_vuelo_solo_descuenta_asientos(self):
+        reserva = services.crear_reserva_vuelo(self.vuelo, self.cliente, self.cliente, [pasajero(1), pasajero(2)])
+        self.refrescar()
+        self.assertEqual(reserva.tipo, Reserva.Tipo.VUELO)
+        self.assertIsNone(reserva.paquete)
+        self.assertEqual(reserva.total, Decimal("1000"))          # 2 × Bs 500
+        self.assertEqual(self.vuelo.asientos_disponibles, 1)      # el trigger descontó 2
+        self.assertEqual(self.paquete.cupos_disponibles, 10)      # el paquete no se toca
+        with self.assertRaises(ValidationError):                  # solo queda 1 asiento
+            services.crear_reserva_vuelo(self.vuelo, self.otro, self.otro, [pasajero(3), pasajero(4)])
+        services.cancelar_reserva(reserva, self.cliente, "Prueba")
+        self.refrescar()
+        self.assertEqual(self.vuelo.asientos_disponibles, 3)      # al cancelar se devuelven
+
+    def test_reservar_hotel_solo_calcula_noches_y_habitaciones(self):
+        salida = self.entrada + timedelta(days=3)
+        reserva = services.crear_reserva_hotel(self.doble, self.entrada, salida, self.cliente, self.cliente,
+                                               [pasajero(1), pasajero(2)])
+        self.assertEqual(reserva.tipo, Reserva.Tipo.HOTEL)
+        self.assertEqual(reserva.total, Decimal("900"))           # 3 noches × Bs 300 × 1 habitación
+        self.assertEqual(reserva.fecha_viaje, self.entrada)
+        self.assertEqual(reserva.asignaciones_hotel.count(), 1)
+        with self.assertRaises(ValidationError):                  # el hotel solo tiene 1 habitación doble
+            services.crear_reserva_hotel(self.doble, self.entrada, salida, self.otro, self.otro, [pasajero(3)])
+        with self.assertRaises(ValidationError):                  # fechas sin tarifa
+            services.crear_reserva_hotel(self.doble, self.entrada + timedelta(days=100),
+                                         self.entrada + timedelta(days=101), self.otro, self.otro, [pasajero(3)])
+
+    def test_vuelo_solo_se_paga_factura_y_cancela_con_penalidad(self):
+        from apps.payments import services as pagos
+        reserva = services.crear_reserva_vuelo(self.vuelo, self.cliente, self.cliente, [pasajero(1)])
+        pagos.pagar_en_linea(reserva, "qr")
+        services.confirmar_reserva(reserva, self.admin)
+        self.assertEqual(reserva.confirmaciones_proveedor.count(), 1)   # solicitud a la aerolínea
+        factura = pagos.emitir_factura(reserva, "1234567", "Cliente Test", self.admin)
+        self.assertIn("Vuelo OB100", factura.concepto)
+        datos = services.calcular_cancelacion(reserva)
+        self.assertEqual(datos["porcentaje"], Decimal("10"))       # sale en 40 días → 10 %
+
+    def test_paginas_de_reserva_de_vuelo_y_hotel(self):
+        self.client.force_login(self.cliente_u)
+        r = self.client.get(reverse("reservations:reservar_vuelo", args=[self.vuelo.pk]))
+        self.assertEqual(r.status_code, 200)
+        datos = {"pas-TOTAL_FORMS": "1", "pas-INITIAL_FORMS": "0", "pas-0-nombres": "Ana", "pas-0-apellidos": "Q",
+                 "pas-0-tipo_documento": "CI", "pas-0-nro_documento": "555",
+                 "pas-0-fecha_nacimiento": "1990-01-01", "cupon": "", "observaciones": ""}
+        r = self.client.post(reverse("reservations:reservar_vuelo", args=[self.vuelo.pk]), datos)
+        reserva = Reserva.objects.get(tipo="vuelo")
+        self.assertRedirects(r, reverse("reservations:detalle", args=[reserva.pk]))
+        datos.update({"fecha_entrada": self.entrada.isoformat(),
+                      "fecha_salida": (self.entrada + timedelta(days=2)).isoformat()})
+        r = self.client.post(reverse("reservations:reservar_hotel", args=[self.doble.pk]), datos)
+        reserva = Reserva.objects.get(tipo="hotel")
+        self.assertRedirects(r, reverse("reservations:detalle", args=[reserva.pk]))
+        self.assertContains(self.client.get(reverse("reservations:detalle", args=[reserva.pk])), "Hotel Inti")

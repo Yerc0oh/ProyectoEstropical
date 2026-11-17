@@ -139,7 +139,7 @@ def crear_plan_cuotas(reserva, cantidad):
     if reserva.cuotas.filter(estado=Cuota.Estado.PENDIENTE).exists():
         raise ValidationError("La reserva ya tiene un plan de cuotas.")
     hoy = timezone.localdate()
-    limite = reserva.paquete.fecha_salida - timedelta(days=7)
+    limite = reserva.fecha_viaje - timedelta(days=7)
     ultima = hoy + timedelta(days=30 * (cantidad - 1))
     if ultima > limite:
         posibles = max((limite - hoy).days // 30 + 1, 1)
@@ -265,7 +265,7 @@ def emitir_factura(reserva, nit, razon_social, perfil):
     numero = (Factura.objects.order_by("-nro_factura").values_list("nro_factura", flat=True).first() or 0) + 1
     return Factura.objects.create(
         nro_factura=numero, reserva=reserva, nit_cliente=nit, razon_social=razon_social,
-        concepto=f"Paquete turístico {reserva.paquete.nombre} - Reserva {reserva.codigo}"[:250],
+        concepto=f"{reserva.get_tipo_display()} {reserva.servicio_nombre} - Reserva {reserva.codigo}"[:250],
         monto=monto, emitida_por=perfil)
 
 
@@ -322,7 +322,7 @@ def comprobante_pdf(pago):
     pdf.titulo("Comprobante de pago")
     pdf.par("N° de comprobante", pago.nro_comprobante)
     pdf.par("Fecha", f"{timezone.localtime(pago.fecha_pago):%d/%m/%Y %H:%M}")
-    pdf.par("Reserva", f"{r.codigo} - {r.paquete.nombre}")
+    pdf.par("Reserva", f"{r.codigo} - {r.servicio_nombre}")
     pdf.par("Cliente", r.cliente.nombre_completo)
     pdf.par("Método", f"{pago.get_metodo_display()} ({pago.get_canal_display()})")
     if pago.cuota:

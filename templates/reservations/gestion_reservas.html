@@ -16,8 +16,8 @@
   <tbody>
   {% for r in reservas %}
   <tr>
-    <td class="fw-bold">{{ r.codigo }}</td><td>{{ r.cliente.nombre_completo }}</td><td>{{ r.paquete.nombre }}</td>
-    <td>{{ r.paquete.fecha_salida|date:"d/m/Y" }}</td><td>{{ r.cantidad_pasajeros }}</td><td class="text-end">{{ r.total }}</td>
+    <td class="fw-bold">{{ r.codigo }}</td><td>{{ r.cliente.nombre_completo }}</td><td>{{ r.servicio_nombre }}</td>
+    <td>{{ r.fecha_viaje|date:"d/m/Y" }}</td><td>{{ r.cantidad_pasajeros }}</td><td class="text-end">{{ r.total }}</td>
     <td>{% include "reservations/_estado.html" with estado=r.estado texto=r.get_estado_display %}</td>
     <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'reservations:detalle' r.pk %}">Abrir</a></td>
   </tr>

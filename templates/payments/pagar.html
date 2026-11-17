@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-7"><div class="card"><div class="card-body">
   <h1 class="h4">Pagar reserva {{ reserva.codigo }}</h1>
-  <p class="text-muted mb-2">{{ reserva.paquete.nombre }}</p>
+  <p class="text-muted mb-2">{{ reserva.servicio_nombre }}</p>
   <p class="fs-4 fw-bold mb-1">Bs {{ monto }}</p>
   <p class="small text-muted">{% if cuota %}Cuota {{ cuota.numero }} (vence {{ cuota.fecha_vencimiento|date:"d/m/Y" }}).{% else %}Saldo total de la reserva.
     <a href="{% url 'payments:cuotas' reserva.pk %}">¿Prefieres pagar en cuotas?</a>{% endif %}</p>
