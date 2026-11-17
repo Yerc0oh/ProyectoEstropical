@@ -13,7 +13,7 @@
   <thead><tr><th>Reserva</th><th>Cliente</th><th>Salida</th><th class="text-end">Total</th><th class="text-end">Pagado</th><th class="text-end">Saldo</th><th>Cuotas vencidas</th><th></th></tr></thead><tbody>
   {% for s in saldos %}
   <tr><td><a href="{% url 'reservations:detalle' s.pk %}">{{ s.codigo }}</a></td><td>{{ s.cliente.nombre_completo }}<div class="small text-muted">{{ s.cliente.telefono }}</div></td>
-    <td>{{ s.reserva.paquete.fecha_salida|date:"d/m/Y" }}</td><td class="text-end">{{ s.total }}</td><td class="text-end">{{ s.pagado }}</td>
+    <td>{{ s.reserva.fecha_viaje|date:"d/m/Y" }}</td><td class="text-end">{{ s.total }}</td><td class="text-end">{{ s.pagado }}</td>
     <td class="text-end fw-bold">{{ s.saldo_pendiente }}</td>
     <td>{% if s.cuotas_vencidas %}<span class="badge text-bg-danger">{{ s.cuotas_vencidas }}</span>{% else %}-{% endif %}</td>
     <td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-primary" href="{% url 'payments:estado_cuenta' s.pk %}">Estado</a>

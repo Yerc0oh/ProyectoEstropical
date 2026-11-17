@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Pago con QR{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-6 col-lg-5"><div class="card"><div class="card-body text-center">
+  <h1 class="h5 mb-3">Estropical · Pago con QR</h1>
+  <p class="text-muted mb-1">Reserva {{ intento.reserva.codigo }}</p>
+  <p class="mb-1">{{ intento.reserva.servicio_nombre }}</p>
+  <p class="fs-3 fw-bold">Bs {{ intento.monto }}</p>
+  {% if intento.cuota %}<p class="small text-muted">Cuota {{ intento.cuota.numero }}</p>{% endif %}
+
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+  {% if intento.estado == "pagado" %}
+    <div class="alert alert-success mb-0">Pago confirmado. Comprobante <b>{{ intento.pago.nro_comprobante }}</b>.<br>
+      Ya puedes volver a la página de la agencia.</div>
+  {% elif intento.estado == "pendiente" and not intento.vencido %}
+    <form method="post">{% csrf_token %}
+      <button class="btn btn-success btn-lg w-100">Confirmar pago</button>
+    </form>
+  {% elif not error %}
+    <div class="alert alert-warning mb-0">Este código QR ya no es válido (vencido o reemplazado).
+      Genera uno nuevo desde la página de pago.</div>
+  {% endif %}
+</div></div></div></div>
+{% endblock %}

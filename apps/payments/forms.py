@@ -14,11 +14,13 @@ class PagoEnLineaForm(BootstrapForm):
     metodo = forms.ChoiceField(label="Método de pago", choices=[(Metodo.QR, "Código QR"), (Metodo.TARJETA, "Tarjeta")],
                                widget=forms.RadioSelect)
     numero_tarjeta = forms.CharField(label="Número de tarjeta", max_length=23, required=False,
-                                     widget=forms.TextInput(attrs={"autocomplete": "cc-number", "inputmode": "numeric"}))
+                                     widget=forms.TextInput(attrs={"autocomplete": "cc-number", "inputmode": "numeric",
+                                                                   "placeholder": "4111 1111 1111 1111"}))
     vencimiento = forms.CharField(label="Vencimiento (MM/AA)", max_length=5, required=False,
                                   widget=forms.TextInput(attrs={"autocomplete": "cc-exp", "placeholder": "MM/AA"}))
     cvv = forms.CharField(label="CVV", max_length=4, required=False,
-                          widget=forms.PasswordInput(attrs={"autocomplete": "cc-csc", "inputmode": "numeric"}))
+                          widget=forms.PasswordInput(attrs={"autocomplete": "cc-csc", "inputmode": "numeric",
+                                                            "placeholder": "123"}))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

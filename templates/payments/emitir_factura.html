@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-6"><div class="card"><div class="card-body">
   <h1 class="h4">Emitir factura · {{ reserva.codigo }}</h1>
-  <p class="text-muted">{{ reserva.cliente.nombre_completo }} · {{ reserva.paquete.nombre }}</p>
+  <p class="text-muted">{{ reserva.cliente.nombre_completo }} · {{ reserva.servicio_nombre }}</p>
   <p>Monto por facturar (pagos completados aún no facturados): <b>Bs {{ monto }}</b></p>
   {% if monto > 0 %}
   <form method="post" novalidate>{% csrf_token %}

@@ -97,10 +97,9 @@
                     </p>
                     {% endfor %}
 
-                    <div class="alert alert-info small mt-3 mb-0">
-                        La disponibilidad para fechas específicas
-                        debe confirmarse antes de reservar.
-                    </div>
+                    <a class="btn btn-primary w-100 mt-3" href="{% url 'reservations:reservar_hotel' tipo.pk %}">
+                        <i class="bi bi-calendar-check"></i> Reservar esta habitación
+                    </a>
 
                 </div>
             </div>

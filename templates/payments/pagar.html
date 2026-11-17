@@ -3,12 +3,11 @@
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-7"><div class="card"><div class="card-body">
   <h1 class="h4">Pagar reserva {{ reserva.codigo }}</h1>
-  <p class="text-muted mb-2">{{ reserva.paquete.nombre }}</p>
+  <p class="text-muted mb-2">{{ reserva.servicio_nombre }}</p>
   <p class="fs-4 fw-bold mb-1">Bs {{ monto }}</p>
   <p class="small text-muted">{% if cuota %}Cuota {{ cuota.numero }} (vence {{ cuota.fecha_vencimiento|date:"d/m/Y" }}).{% else %}Saldo total de la reserva.
     <a href="{% url 'payments:cuotas' reserva.pk %}">¿Prefieres pagar en cuotas?</a>{% endif %}</p>
-  <div class="alert alert-info small">Entorno académico: los pagos se procesan con una <b>pasarela simulada</b>. No se cobra dinero real
-    ni se guardan datos de la tarjeta. Tarjeta de prueba aprobada: 4111 1111 1111 1111 · rechazada: 4000 0000 0000 0002.</div>
+  <div class="alert alert-light border small mb-3" title="Aprobada: 4111 1111 1111 1111 · Rechazada: 4000 0000 0000 0002 · Vence 12/30 · CVV 123"><i class="bi bi-shield-lock"></i> Pago seguro. Los datos de tu tarjeta no se almacenan en nuestros servidores.</div> 
   <form method="post" novalidate id="form-pago">{% csrf_token %}
     {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
     <div class="mb-3">
@@ -18,8 +17,15 @@
       {% for e in form.metodo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
     </div>
     <div id="bloque-qr" class="text-center border rounded p-3 mb-3">
-      <div id="qr-pago" class="mx-auto mb-2 bg-white border d-inline-block p-2" data-texto="{{ referencia_qr }}"></div>
-      <div class="small text-muted">Escanea con la app de tu banco y luego presiona «Pagar».<br><code>{{ referencia_qr }}</code></div>
+      <div id="qr-pago" class="mx-auto mb-2 bg-white border d-inline-block p-2" data-texto="{{ enlace_qr }}"></div>
+      <div class="small text-muted mb-2">Escanea el código con la cámara de tu celular y confirma el pago.<br>
+        El código sirve una sola vez y vence a las {{ intento.fecha_expiracion|time:"H:i" }}.</div>
+      <a class="btn btn-outline-primary btn-sm" href="{{ enlace_qr }}" target="_blank" rel="noopener">Abrir enlace de pago</a>
+      <div id="qr-estado" class="mt-3 small text-primary"
+           data-url="{% url 'payments:qr_estado' intento.token %}">Esperando el pago…</div>
+      {% if qr_local %}<div class="alert alert-warning small mt-3 mb-0 text-start">Abriste el sistema como
+        <code>localhost</code>: el celular no podrá abrir este enlace. Para escanear, entra al sistema con la IP
+        de tu computadora (por ejemplo <code>http://192.168.1.10:8000</code>). El botón «Abrir enlace de pago» sí funciona.</div>{% endif %}
     </div>
     <div id="bloque-tarjeta" class="row g-2 mb-3">
       <div class="col-12"><label class="form-label">{{ form.numero_tarjeta.label }}</label>{{ form.numero_tarjeta }}
@@ -29,7 +35,7 @@
       <div class="col-6"><label class="form-label">{{ form.cvv.label }}</label>{{ form.cvv }}
         {% for e in form.cvv.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
     </div>
-    <button class="btn btn-primary">Pagar Bs {{ monto }}</button>
+    <button class="btn btn-primary" id="btn-pagar">Pagar Bs {{ monto }}</button>
     <a class="btn btn-link" href="{% url 'reservations:detalle' reserva.pk %}">Volver</a>
   </form>
 </div></div></div></div>
@@ -38,7 +44,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
 (function () {
-  // QR simulado: solo contiene el texto de referencia del pago, no realiza ningún cobro.
+  // El QR contiene el enlace de pago con un token único (ver services.crear_intento_qr).
   const caja = document.getElementById('qr-pago');
   if (typeof qrcode === 'function') {
     const qr = qrcode(0, 'M');
@@ -46,7 +52,7 @@
     qr.make();
     caja.innerHTML = qr.createImgTag(5, 8);
   } else {
-    caja.innerHTML = '<span class="small text-muted">No se pudo generar el QR (sin internet).</span>';
+    caja.innerHTML = '<span class="small text-muted">No se pudo generar el QR (sin internet). Usa el botón «Abrir enlace de pago».</span>';
   }
 
   const radios = document.querySelectorAll('#form-pago input[name="metodo"]');
@@ -54,9 +60,30 @@
     const m = (document.querySelector('#form-pago input[name="metodo"]:checked') || {}).value;
     document.getElementById('bloque-qr').style.display = m === 'qr' ? '' : 'none';
     document.getElementById('bloque-tarjeta').style.display = m === 'tarjeta' ? '' : 'none';
+    document.getElementById('btn-pagar').style.display = m === 'qr' ? 'none' : '';   // el QR se paga desde el celular
   }
   radios.forEach(r => r.addEventListener('change', mostrar));
   mostrar();
+
+  // Cada 2 segundos pregunta al servidor si el QR ya se pagó.
+  const estado = document.getElementById('qr-estado');
+  const timer = setInterval(async function () {
+    try {
+      const r = await fetch(estado.dataset.url, {headers: {'Accept': 'application/json'}});
+      if (!r.ok) return;
+      const d = await r.json();
+      if (d.estado === 'pagado' && d.url_resultado) {
+        clearInterval(timer);
+        estado.className = 'mt-3 small text-success fw-bold';
+        estado.textContent = '¡Pago recibido! Redirigiendo…';
+        window.location = d.url_resultado;
+      } else if (d.estado === 'vencido' || d.estado === 'anulado') {
+        clearInterval(timer);
+        estado.className = 'mt-3 small text-danger';
+        estado.textContent = 'El código QR venció. Recarga la página para generar uno nuevo.';
+      }
+    } catch (e) { /* sin conexión: se reintenta en el siguiente ciclo */ }
+  }, 2000);
 })();
 </script>
 {% endblock %}

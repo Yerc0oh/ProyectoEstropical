@@ -8,6 +8,7 @@ Funciones de PostgreSQL que se usan (migración 0002):
 import csv
 import io
 import re
+import secrets  
 import uuid
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
@@ -21,7 +22,7 @@ from apps.core.pdf import DocumentoPDF
 from apps.reservations.models import ParametroSistema, Reserva
 from apps.reservations.services import expirar_reservas_vencidas, redondear, total_pagado
 
-from .models import CierreCaja, Cuota, Factura, Metodo, Pago, PagoProveedor, Reembolso
+from .models import CierreCaja, Cuota, Factura, IntentoPagoQR, Metodo, Pago, PagoProveedor, Reembolso
 
 CERO = Decimal("0")
 
@@ -138,7 +139,7 @@ def crear_plan_cuotas(reserva, cantidad):
     if reserva.cuotas.filter(estado=Cuota.Estado.PENDIENTE).exists():
         raise ValidationError("La reserva ya tiene un plan de cuotas.")
     hoy = timezone.localdate()
-    limite = reserva.paquete.fecha_salida - timedelta(days=7)
+    limite = reserva.fecha_viaje - timedelta(days=7)
     ultima = hoy + timedelta(days=30 * (cantidad - 1))
     if ultima > limite:
         posibles = max((limite - hoy).days // 30 + 1, 1)
@@ -264,7 +265,7 @@ def emitir_factura(reserva, nit, razon_social, perfil):
     numero = (Factura.objects.order_by("-nro_factura").values_list("nro_factura", flat=True).first() or 0) + 1
     return Factura.objects.create(
         nro_factura=numero, reserva=reserva, nit_cliente=nit, razon_social=razon_social,
-        concepto=f"Paquete turístico {reserva.paquete.nombre} - Reserva {reserva.codigo}"[:250],
+        concepto=f"{reserva.get_tipo_display()} {reserva.servicio_nombre} - Reserva {reserva.codigo}"[:250],
         monto=monto, emitida_por=perfil)
 
 
@@ -321,7 +322,7 @@ def comprobante_pdf(pago):
     pdf.titulo("Comprobante de pago")
     pdf.par("N° de comprobante", pago.nro_comprobante)
     pdf.par("Fecha", f"{timezone.localtime(pago.fecha_pago):%d/%m/%Y %H:%M}")
-    pdf.par("Reserva", f"{r.codigo} - {r.paquete.nombre}")
+    pdf.par("Reserva", f"{r.codigo} - {r.servicio_nombre}")
     pdf.par("Cliente", r.cliente.nombre_completo)
     pdf.par("Método", f"{pago.get_metodo_display()} ({pago.get_canal_display()})")
     if pago.cuota:
@@ -432,3 +433,54 @@ def cerrar_caja(fecha, perfil, observaciones=""):
     except IntegrityError as e:
         raise ValidationError("La caja de esa fecha ya fue cerrada.") from e
     return CierreCaja.objects.get(pk=cierre_id)
+
+
+
+# ================================================================ CU-26 pago con QR
+MINUTOS_VIGENCIA_QR = 10
+
+
+@transaction.atomic
+def crear_intento_qr(reserva):
+    """Genera el cobro que se muestra como QR. Anula los QR pendientes anteriores de la reserva."""
+    reserva = Reserva.objects.select_for_update().get(pk=reserva.pk)
+    _verificar_pagable(reserva)
+    monto, cuota = monto_a_pagar(reserva)
+    reserva.intentos_qr.filter(estado=IntentoPagoQR.Estado.PENDIENTE).update(
+        estado=IntentoPagoQR.Estado.ANULADO)
+    return IntentoPagoQR.objects.create(
+        token=secrets.token_urlsafe(24), reserva=reserva, cuota=cuota, monto=monto,
+        fecha_expiracion=timezone.now() + timedelta(minutes=MINUTOS_VIGENCIA_QR))
+
+
+def confirmar_intento_qr(token):
+    """Se ejecuta al abrir el enlace del QR y pulsar «Confirmar pago». Registra el pago una sola vez."""
+    with transaction.atomic():
+        try:
+            intento = IntentoPagoQR.objects.select_for_update().get(token=token)
+        except IntentoPagoQR.DoesNotExist:
+            raise ValidationError("El código QR no es válido.")
+        if intento.estado == IntentoPagoQR.Estado.PAGADO:
+            raise ValidationError("Este código QR ya fue pagado.")
+        if intento.estado == IntentoPagoQR.Estado.ANULADO:
+            raise ValidationError("Este código QR fue reemplazado por uno nuevo.")
+        if intento.estado == IntentoPagoQR.Estado.VENCIDO or intento.vencido:
+            intento.estado = IntentoPagoQR.Estado.VENCIDO
+            intento.save(update_fields=["estado"])
+            vencido = True
+        else:
+            vencido = False
+            reserva = Reserva.objects.select_for_update().get(pk=intento.reserva_id)
+            _verificar_pagable(reserva)
+            monto, cuota = monto_a_pagar(reserva)
+            if monto != intento.monto or (cuota and cuota.pk) != intento.cuota_id:
+                raise ValidationError("El monto a pagar cambió. Genera un nuevo código QR.")
+            referencia = "QR-" + intento.token[:20].upper()
+            pago = _registrar_pago(reserva, cuota, monto, Metodo.QR, Pago.Canal.EN_LINEA,
+                                   Pago.Estado.COMPLETADO, referencia, None)
+            intento.estado = IntentoPagoQR.Estado.PAGADO
+            intento.pago = pago
+            intento.save(update_fields=["estado", "pago"])
+    if vencido:     # fuera del atomic, para que el estado «vencido» quede guardado
+        raise ValidationError("El código QR venció. Genera uno nuevo desde la página de pago.")
+    return pago

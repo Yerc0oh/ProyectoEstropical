@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row justify-content-center"><div class="col-lg-7"><div class="card"><div class="card-body">
   <h1 class="h4">Cancelar reserva {{ reserva.codigo }}</h1>
-  <p class="text-muted">{{ reserva.paquete.nombre }} · sale el {{ reserva.paquete.fecha_salida|date:"d/m/Y" }} (faltan {{ calculo.dias }} días)</p>
+  <p class="text-muted">{{ reserva.servicio_nombre }} · sale el {{ reserva.fecha_viaje|date:"d/m/Y" }} (faltan {{ calculo.dias }} días)</p>
   <table class="table table-sm">
     <tr><th>Total de la reserva</th><td class="text-end">Bs {{ reserva.total }}</td></tr>
     <tr><th>Pagado hasta hoy</th><td class="text-end">Bs {{ calculo.pagado }}</td></tr>

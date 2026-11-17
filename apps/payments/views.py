@@ -5,13 +5,14 @@ from datetime import date
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db.models import Q, Sum
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.accounts.services import obtener_perfil
-from apps.core.access import admin_required, es_administrador
+from apps.core.access import admin_required, es_administrador, public
 from apps.core.views_base import AdminCreateView, AdminListView
 from apps.reservations.models import Reserva
 from apps.reservations.services import reservas_visibles
@@ -19,8 +20,7 @@ from apps.reservations.services import reservas_visibles
 from . import services
 from .forms import (AnularFacturaForm, CierreCajaForm, ExtractoForm, FacturaForm, PagoEnLineaForm,
                     PagoProveedorForm, PagoVentanillaForm, PlanCuotasForm, ProcesarReembolsoForm)
-from .models import CierreCaja, Factura, Pago, PagoProveedor, Reembolso, SaldoReserva
-
+from .models import CierreCaja, Factura, IntentoPagoQR, Pago, PagoProveedor, Reembolso, SaldoReserva
 
 def _errores(request, error):
     for m in getattr(error, "messages", [str(error)]):
@@ -42,20 +42,53 @@ def pagar(request, pk):
     monto, cuota = services.monto_a_pagar(reserva)
     form = PagoEnLineaForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        try:
-            pago, mensaje = services.pagar_en_linea(reserva, form.cleaned_data["metodo"],
-                                                    form.cleaned_data.get("numero_tarjeta", ""))
-        except ValidationError as e:
-            _errores(request, e)
+        if form.cleaned_data["metodo"] == "qr":
+            messages.info(request, "Para pagar con QR, escanéalo con tu celular o abre el enlace de pago.")
         else:
-            if pago.estado == Pago.Estado.COMPLETADO:
-                messages.success(request, f"Pago aprobado. Comprobante {pago.nro_comprobante}.")
-                return redirect("payments:pago_resultado", pago.pk)
-            messages.error(request, f"Pago rechazado: {mensaje}")
+            try:
+                pago, mensaje = services.pagar_en_linea(reserva, form.cleaned_data["metodo"],
+                                                        form.cleaned_data.get("numero_tarjeta", ""))
+            except ValidationError as e:
+                _errores(request, e)
+            else:
+                if pago.estado == Pago.Estado.COMPLETADO:
+                    messages.success(request, f"Pago aprobado. Comprobante {pago.nro_comprobante}.")
+                    return redirect("payments:pago_resultado", pago.pk)
+                messages.error(request, f"Pago rechazado: {mensaje}")
+    intento = services.crear_intento_qr(reserva)        # un QR nuevo cada vez que se abre la página
+    enlace_qr = request.build_absolute_uri(reverse("payments:qr_confirmar", args=[intento.token]))
     return render(request, "payments/pagar.html", {
         "reserva": reserva, "monto": monto, "cuota": cuota, "form": form,
-        "referencia_qr": f"ESTROPICAL|{reserva.codigo}|{monto}"})
+        "intento": intento, "enlace_qr": enlace_qr,
+        "qr_local": request.get_host().split(":")[0] in ("localhost", "127.0.0.1")})
 
+
+@public
+def qr_confirmar(request, token):
+    """Página que abre el celular al escanear el QR. Es pública: el token único es la llave."""
+    intento = get_object_or_404(IntentoPagoQR.objects.select_related("reserva", "reserva__paquete"),
+                                token=token)
+    error = None
+    if request.method == "POST":
+        try:
+            services.confirmar_intento_qr(token)
+        except ValidationError as e:
+            error = " ".join(e.messages)
+        intento.refresh_from_db()
+    return render(request, "payments/qr_confirmar.html", {"intento": intento, "error": error})
+
+
+def qr_estado(request, token):
+    """La página de pago lo consulta cada 2 segundos para saber si ya se pagó desde el celular."""
+    intento = get_object_or_404(IntentoPagoQR, token=token)
+    _reserva(request, intento.reserva_id)         # 404 si la reserva no es suya
+    if intento.estado == IntentoPagoQR.Estado.PENDIENTE and intento.vencido:
+        intento.estado = IntentoPagoQR.Estado.VENCIDO
+        intento.save(update_fields=["estado"])
+    datos = {"estado": intento.estado}
+    if intento.pago_id:
+        datos["url_resultado"] = reverse("payments:pago_resultado", args=[intento.pago_id])
+    return JsonResponse(datos)
 
 def pago_resultado(request, pk):
     pago = get_object_or_404(Pago.objects.select_related("reserva", "cuota"), pk=pk)

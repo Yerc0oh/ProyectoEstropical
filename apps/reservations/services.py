@@ -21,6 +21,8 @@ from django.utils.crypto import get_random_string
 from apps.accounts.models import Perfil
 from apps.core.access import ROL_CLIENTE, es_administrador
 from apps.packages.models import Paquete, PaqueteHotel, PaqueteVuelo
+from apps.flights.models import Vuelo
+from apps.hotels.models import TarifaHabitacion, TipoHabitacion
 
 from .models import (
     ConfirmacionProveedor,
@@ -61,6 +63,9 @@ def reservas_visibles(user):
     qs = Reserva.objects.select_related(
         "paquete",
         "paquete__destino",
+        "vuelo__origen",
+        "vuelo__destino",
+        "tipo_habitacion__hotel",
         "cliente",
     )
 
@@ -166,7 +171,7 @@ def validar_cupon(
 
     if (
         promo.paquete_id
-        and promo.paquete_id != paquete.pk
+        and (paquete is None or promo.paquete_id != paquete.pk)
     ):
         raise ValidationError(
             "El cupón no aplica a este paquete."
@@ -336,6 +341,11 @@ def actualizar_cantidad(reserva):
     )
 
     nueva = reserva.pasajeros.count()
+    if reserva.tipo != Reserva.Tipo.PAQUETE:
+        raise ValidationError(
+            "Solo las reservas de paquetes permiten cambiar la cantidad de pasajeros. "
+            "Cancela y vuelve a reservar."
+        )
 
     if nueva == 0:
         raise ValidationError(
@@ -408,7 +418,7 @@ def calcular_cancelacion(reserva):
     datos = penalidad_cancelacion(reserva)
 
     datos["dias"] = (
-        reserva.paquete.fecha_salida
+        reserva.fecha_viaje
         - timezone.localdate()
     ).days
 
@@ -531,6 +541,24 @@ def generar_solicitudes_proveedor(reserva):
     detalle = (
         f"{reserva.cantidad_pasajeros} pasajero(s)"
     )
+
+    if reserva.tipo == Reserva.Tipo.VUELO:          # vuelo solo: una solicitud a la aerolínea
+        vuelo = reserva.vuelo
+        _, nueva = ConfirmacionProveedor.objects.get_or_create(
+            reserva=reserva, proveedor=vuelo.proveedor,
+            concepto=f"Vuelo {vuelo.numero_vuelo} {vuelo.origen.nombre} - {vuelo.destino.nombre}"[:200],
+            defaults={"observacion": detalle})
+        return int(nueva)
+
+    if reserva.tipo == Reserva.Tipo.HOTEL:          # hotel solo: una solicitud al hotel
+        tipo = reserva.tipo_habitacion
+        noches = (reserva.fecha_fin - reserva.fecha_inicio).days
+        _, nueva = ConfirmacionProveedor.objects.get_or_create(
+            reserva=reserva, proveedor=tipo.hotel.proveedor,
+            concepto=(f"Hotel {tipo.hotel.nombre} - {tipo.nombre}, {noches} noche(s) "
+                      f"desde {reserva.fecha_inicio:%d/%m/%Y}")[:200],
+            defaults={"observacion": detalle})
+        return int(nueva)
 
     vuelos = PaqueteVuelo.objects.filter(
         paquete=reserva.paquete
@@ -950,3 +978,84 @@ def itinerario_pdf(reserva):
         )
 
     return pdf
+
+
+
+# ============================================================
+# CU-18 RESERVAR VUELO SOLO U HOTEL SOLO
+# ============================================================
+
+def vuelos_reservables():
+    return Vuelo.objects.filter(estado=Vuelo.Estado.PROGRAMADO, fecha_salida__gt=timezone.now(),
+                                asientos_disponibles__gt=0)
+
+
+def _nueva_reserva(cliente, creada_por, pasajeros, precio_unitario, codigo_cupon, observaciones, **servicio):
+    """Parte común: valida pasajeros y cupón, guarda la reserva (el trigger descuenta cupos) y los pasajeros."""
+    n = len(pasajeros)
+    if n == 0:
+        raise ValidationError("Registra al menos un pasajero.")
+    subtotal = precio_unitario * n
+    promo = validar_cupon(codigo_cupon, None, subtotal) if codigo_cupon else None
+    horas = ParametroSistema.obtener("horas_expiracion_reserva", 24)
+    reserva = Reserva(
+        codigo=Reserva.nuevo_codigo(), cliente=cliente, creada_por=creada_por, promocion=promo,
+        cantidad_pasajeros=n, precio_unitario=precio_unitario,
+        descuento=calcular_descuento(promo, subtotal),
+        fecha_expiracion=timezone.now() + timedelta(hours=horas),
+        observaciones=observaciones or "", **servicio)
+    _guardar_con_trigger(reserva)
+    for datos in pasajeros:
+        Pasajero.objects.create(reserva=reserva, **datos)
+    sincronizar_alojamiento(reserva)
+    return reserva
+
+
+@transaction.atomic
+def crear_reserva_vuelo(vuelo, cliente, creada_por, pasajeros, codigo_cupon="", observaciones=""):
+    """Vuelo solo: precio = precio del vuelo × pasajeros. El trigger descuenta los asientos."""
+    vuelo = Vuelo.objects.select_for_update().get(pk=vuelo.pk)
+    if not vuelos_reservables().filter(pk=vuelo.pk).exists():
+        raise ValidationError("Este vuelo ya no está disponible para reservar.")
+    if vuelo.asientos_disponibles < len(pasajeros):
+        raise ValidationError(f"El vuelo {vuelo.numero_vuelo} solo tiene "
+                              f"{vuelo.asientos_disponibles} asientos libres.")
+    return _nueva_reserva(cliente, creada_por, pasajeros, vuelo.precio_referencial, codigo_cupon,
+                          observaciones, tipo=Reserva.Tipo.VUELO, vuelo=vuelo)
+
+
+def precio_estadia(tipo_habitacion, entrada, salida, huespedes):
+    """Suma la tarifa de cada noche y la multiplica por las habitaciones necesarias."""
+    if salida <= entrada:
+        raise ValidationError("La fecha de salida debe ser posterior a la de entrada.")
+    if entrada <= timezone.localdate():
+        raise ValidationError("La fecha de entrada debe ser a partir de mañana.")
+    tarifas = list(TarifaHabitacion.objects.filter(
+        tipo_habitacion=tipo_habitacion, fecha_inicio__lt=salida, fecha_fin__gte=entrada))
+    total_noches = Decimal("0")
+    dia = entrada
+    while dia < salida:
+        tarifa = next((t for t in tarifas if t.fecha_inicio <= dia <= t.fecha_fin), None)
+        if tarifa is None:
+            raise ValidationError(f"No hay tarifa registrada para la noche del {dia:%d/%m/%Y}.")
+        total_noches += tarifa.precio_noche
+        dia += timedelta(days=1)
+    habitaciones = -(-huespedes // tipo_habitacion.capacidad)      # redondeo hacia arriba
+    return total_noches * habitaciones
+
+
+@transaction.atomic
+def crear_reserva_hotel(tipo_habitacion, entrada, salida, cliente, creada_por, pasajeros,
+                        codigo_cupon="", observaciones=""):
+    """Hotel solo: precio = tarifas de cada noche × habitaciones. Las habitaciones las asigna alojamiento.py."""
+    tipo_habitacion = TipoHabitacion.objects.select_related("hotel").get(pk=tipo_habitacion.pk)
+    if not tipo_habitacion.hotel.activo:
+        raise ValidationError("Este hotel no está disponible.")
+    n = len(pasajeros)
+    if n == 0:
+        raise ValidationError("Registra al menos un huésped.")
+    total = precio_estadia(tipo_habitacion, entrada, salida, n)
+    precio_por_huesped = redondear(total / n)
+    return _nueva_reserva(cliente, creada_por, pasajeros, precio_por_huesped, codigo_cupon, observaciones,
+                          tipo=Reserva.Tipo.HOTEL, tipo_habitacion=tipo_habitacion,
+                          fecha_inicio=entrada, fecha_fin=salida)

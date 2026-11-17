@@ -6,7 +6,9 @@ app_name = "payments"
 
 urlpatterns = [  # Ninguna vista es pública: el middleware exige sesión en todas.
     # Cliente (el administrador también puede abrirlas para cualquier reserva)
-    path("pagos/reserva/<int:pk>/pagar/", views.pagar, name="pagar"),                              # CU-26
+    path("pagos/reserva/<int:pk>/pagar/", views.pagar, name="pagar"),
+    path("pagos/qr/<str:token>/", views.qr_confirmar, name="qr_confirmar"),                       # CU-26 QR (pública)
+    path("pagos/qr/<str:token>/estado/", views.qr_estado, name="qr_estado"),                            # CU-26
     path("pagos/<int:pk>/", views.pago_resultado, name="pago_resultado"),
     path("pagos/<int:pk>/comprobante.pdf", views.comprobante_pdf, name="comprobante_pdf"),
     path("pagos/reserva/<int:pk>/cuotas/", views.cuotas, name="cuotas"),                           # CU-27

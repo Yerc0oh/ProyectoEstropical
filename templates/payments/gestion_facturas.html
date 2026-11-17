@@ -6,7 +6,7 @@
 <div class="card mb-4"><div class="card-body">
   <h2 class="h6">Reservas con pagos sin facturar</h2>
   <div class="table-responsive"><table class="table table-sm mb-0"><tbody>
-  {% for r in por_facturar %}<tr><td>{{ r.codigo }}</td><td>{{ r.cliente.nombre_completo }}</td><td>{{ r.paquete.nombre }}</td>
+  {% for r in por_facturar %}<tr><td>{{ r.codigo }}</td><td>{{ r.cliente.nombre_completo }}</td><td>{{ r.servicio_nombre }}</td>
     <td class="text-end"><a class="btn btn-sm btn-primary" href="{% url 'payments:emitir_factura' r.pk %}">Emitir factura</a></td></tr>{% endfor %}
   </tbody></table></div>
 </div></div>

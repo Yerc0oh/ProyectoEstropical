@@ -8,6 +8,8 @@ urlpatterns = [  # Ninguna vista es pública: el middleware exige sesión en tod
     # Cliente (y administrador, que también puede abrir cualquier reserva)
     path("reservas/", views.mis_reservas, name="mis_reservas"),                                   # CU-19
     path("reservas/nueva/<int:paquete_pk>/", views.reservar, name="reservar"),                    # CU-18
+    path("reservas/nueva/vuelo/<int:vuelo_pk>/", views.reservar_vuelo, name="reservar_vuelo"),    # CU-18 vuelo solo
+    path("reservas/nueva/hotel/<int:tipo_pk>/", views.reservar_hotel, name="reservar_hotel"),     # CU-18 hotel solo
     path("reservas/<int:pk>/", views.detalle, name="detalle"),                                    # CU-19
     path("reservas/<int:pk>/modificar/", views.modificar, name="modificar"),                      # CU-20
     path("reservas/<int:pk>/cancelar/", views.cancelar, name="cancelar"),                         # CU-21

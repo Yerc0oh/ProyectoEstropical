@@ -237,3 +237,41 @@ class SaldoReserva(models.Model):                                         # CU-2
     class Meta:
         managed = False
         db_table = "v_saldo_reserva"
+
+
+
+class IntentoPagoQR(models.Model):                                        # CU-26 (QR)
+    """Cobro pendiente que se muestra como código QR. El QR lleva un enlace con un token único:
+    al abrirlo (escaneando con el celular) el cliente confirma el pago. Sirve una sola vez
+    y vence a los pocos minutos."""
+
+    class Estado(models.TextChoices):
+        PENDIENTE = "pendiente", "Pendiente"
+        PAGADO = "pagado", "Pagado"
+        VENCIDO = "vencido", "Vencido"
+        ANULADO = "anulado", "Anulado"
+
+    token = models.CharField(max_length=64, unique=True)
+    reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE, related_name="intentos_qr")
+    cuota = models.ForeignKey(Cuota, on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name="intentos_qr")
+    monto = models.DecimalField(max_digits=12, decimal_places=2)
+    estado = models.CharField(max_length=10, choices=Estado.choices, default=Estado.PENDIENTE)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+    fecha_expiracion = models.DateTimeField()
+    pago = models.OneToOneField(Pago, on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name="intento_qr")
+
+    class Meta:
+        db_table = "intento_pago_qr"
+        verbose_name = "intento de pago QR"
+        verbose_name_plural = "intentos de pago QR"
+        ordering = ["-fecha_creacion"]
+        constraints = [models.CheckConstraint(condition=Q(monto__gt=0), name="ck_intento_qr_monto")]
+
+    def __str__(self):
+        return f"QR {self.reserva.codigo} - Bs {self.monto} ({self.get_estado_display()})"
+
+    @property
+    def vencido(self):
+        return timezone.now() >= self.fecha_expiracion

@@ -170,3 +170,16 @@ class ActividadForm(BootstrapModelForm):
             if repetida.exists():
                 self.add_error("orden", "Ya hay una actividad con ese orden en ese día.")
         return datos
+
+
+class FechasHotelForm(BootstrapForm):
+    """CU-18 hotel solo: fechas de la estadía."""
+    fecha_entrada = forms.DateField(label="Fecha de entrada", widget=forms.DateInput(attrs={"type": "date"}))
+    fecha_salida = forms.DateField(label="Fecha de salida", widget=forms.DateInput(attrs={"type": "date"}))
+
+    def clean(self):
+        datos = super().clean()
+        entrada, salida = datos.get("fecha_entrada"), datos.get("fecha_salida")
+        if entrada and salida and salida <= entrada:
+            self.add_error("fecha_salida", "Debe ser posterior a la fecha de entrada.")
+        return datos

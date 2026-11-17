@@ -12,18 +12,20 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from apps.accounts.forms import PerfilForm
 from apps.accounts.services import obtener_perfil
 from apps.core.access import admin_required, es_administrador, es_cliente
+from apps.hotels.models import TipoHabitacion
 from apps.packages.models import Paquete, PaqueteActividad
 
 from . import services
 from .forms import (MAX_PASAJEROS, ActividadForm, CancelarReservaForm, ClienteNuevoForm,
-                    DocumentoViajeForm, ModificarReservaForm, PasajeroEdicionFormSet, PasajeroFormSet,
-                    ReservaForm, ReservaPorAgenciaForm, ResponderConfirmacionForm)
+                    DocumentoViajeForm, FechasHotelForm, ModificarReservaForm, PasajeroEdicionFormSet,
+                    PasajeroFormSet, ReservaForm, ReservaPorAgenciaForm, ResponderConfirmacionForm)
 from .models import ConfirmacionProveedor, DocumentoViaje, Reserva
 
 
@@ -282,11 +284,17 @@ def documento_eliminar(request, pk):
 # ================================================================ CU-25 Itinerario
 def itinerario(request, pk):
     reserva = _reserva_visible(request, pk)
+    if reserva.tipo != Reserva.Tipo.PAQUETE:
+        messages.info(request, "El itinerario día por día es para paquetes. Los datos del vuelo u hotel "
+                               "están en el detalle de la reserva.")
+        return redirect("reservations:detalle", pk)
     return render(request, "reservations/itinerario.html", {"reserva": reserva, **services.itinerario(reserva)})
 
 
 def itinerario_pdf(request, pk):
     reserva = _reserva_visible(request, pk)
+    if reserva.tipo != Reserva.Tipo.PAQUETE:
+        return redirect("reservations:detalle", pk)
     return services.itinerario_pdf(reserva).respuesta(f"itinerario_{reserva.codigo}.pdf")
 
 
@@ -318,3 +326,65 @@ def cronograma_eliminar(request, paquete_pk, actividad_pk):
 def cronograma_paquetes(request):
     return render(request, "reservations/cronograma_paquetes.html", {
         "paquetes": Paquete.objects.exclude(estado=Paquete.Estado.ARCHIVADO).select_related("destino")})
+
+
+
+
+# ================================================================ CU-18 Reservar vuelo solo / hotel solo
+def _reservar_servicio(request, titulo, subtitulo, volver, crear, fechas_form=None, max_pasajeros=MAX_PASAJEROS):
+    """Mismo flujo que reservar un paquete: cantidad (?pasajeros=N) + datos de cada uno + cupón."""
+    admin = es_administrador(request.user)
+    if not (admin or es_cliente(request.user)):
+        raise PermissionDenied
+    try:
+        n = int(request.GET.get("pasajeros", 1))
+    except ValueError:
+        n = 1
+    n = max(1, min(n, MAX_PASAJEROS, max(max_pasajeros, 1)))
+    form = (ReservaPorAgenciaForm if admin else ReservaForm)(request.POST or None)
+    formset = PasajeroFormSet(request.POST or None, prefix="pas", initial=[{}] * n if not request.POST else None)
+    validos = form.is_valid() and formset.is_valid() and (fechas_form is None or fechas_form.is_valid())
+    if request.method == "POST" and validos:
+        pasajeros = [f.cleaned_data for f in formset.forms if f.cleaned_data]
+        perfil = obtener_perfil(request.user)
+        cliente = form.cleaned_data["cliente"] if admin else perfil
+        try:
+            reserva = crear(cliente, perfil, pasajeros, form.cleaned_data["cupon"],
+                            form.cleaned_data["observaciones"])
+        except ValidationError as e:
+            _errores(request, e)
+        else:
+            messages.success(request, f"Reserva {reserva.codigo} registrada. Tienes hasta "
+                             f"{timezone.localtime(reserva.fecha_expiracion):%d/%m/%Y %H:%M} para pagarla.")
+            return redirect("reservations:detalle", reserva.pk)
+    return render(request, "reservations/reservar_servicio.html", {
+        "titulo": titulo, "subtitulo": subtitulo, "volver": volver, "form": form, "formset": formset,
+        "fechas_form": fechas_form, "max_pasajeros": min(MAX_PASAJEROS, max(max_pasajeros, 1))})
+
+
+def reservar_vuelo(request, vuelo_pk):
+    vuelo = get_object_or_404(services.vuelos_reservables().select_related("origen", "destino"), pk=vuelo_pk)
+    salida = timezone.localtime(vuelo.fecha_salida)
+    return _reservar_servicio(
+        request, f"Vuelo {vuelo.numero_vuelo}: {vuelo.origen} - {vuelo.destino}",
+        f"Sale el {salida:%d/%m/%Y a las %H:%M} · Bs {vuelo.precio_referencial} por pasajero · "
+        f"{vuelo.asientos_disponibles} asientos libres",
+        reverse("flights:detalle", args=[vuelo.pk]),
+        lambda cliente, perfil, pasajeros, cupon, obs: services.crear_reserva_vuelo(
+            vuelo, cliente, perfil, pasajeros, cupon, obs),
+        max_pasajeros=vuelo.asientos_disponibles)
+
+
+def reservar_hotel(request, tipo_pk):
+    tipo = get_object_or_404(TipoHabitacion.objects.select_related("hotel", "hotel__destino"),
+                             pk=tipo_pk, hotel__activo=True)
+    fechas = FechasHotelForm(request.POST or None)
+    return _reservar_servicio(
+        request, f"{tipo.hotel.nombre} - {tipo.nombre}",
+        f"{tipo.hotel.destino} · Hasta {tipo.capacidad} personas por habitación · el precio se calcula con "
+        f"la tarifa de cada noche",
+        reverse("hotels:detalle", args=[tipo.hotel.pk]),
+        lambda cliente, perfil, pasajeros, cupon, obs: services.crear_reserva_hotel(
+            tipo, fechas.cleaned_data["fecha_entrada"], fechas.cleaned_data["fecha_salida"],
+            cliente, perfil, pasajeros, cupon, obs),
+        fechas_form=fechas)

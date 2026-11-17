@@ -8,7 +8,7 @@
   <div class="col-lg-5"><div class="card"><div class="card-body small">
     <h2 class="h6">{{ reserva.codigo }} {% include "reservations/_estado.html" with estado=reserva.estado texto=reserva.get_estado_display %}</h2>
     <p class="mb-1">{{ reserva.cliente.nombre_completo }} · {{ reserva.cliente.tipo_documento }} {{ reserva.cliente.nro_documento }}</p>
-    <p class="mb-1">{{ reserva.paquete.nombre }} · sale {{ reserva.paquete.fecha_salida|date:"d/m/Y" }}</p>
+    <p class="mb-1">{{ reserva.servicio_nombre }} · sale {{ reserva.fecha_viaje|date:"d/m/Y" }}</p>
     <p class="mb-1">Total Bs {{ reserva.total }} · <b>Saldo Bs {{ saldo }}</b></p>
     {% if cuota %}<p class="mb-0 text-primary">Paga en cuotas: corresponde la cuota {{ cuota.numero }} de Bs {{ cuota.monto }}.</p>{% endif %}
     <a href="{% url 'payments:estado_cuenta' reserva.pk %}">Ver estado de cuenta</a>

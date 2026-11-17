@@ -229,7 +229,7 @@
                         {% for reserva in reservas|slice:":20" %}
                         <tr>
                             <td>{{ reserva.codigo }}</td>
-                            <td>{{ reserva.paquete }}</td>
+                            <td>{{ reserva.servicio_nombre }}</td>
                             <td>{{ reserva.cantidad_pasajeros }}</td>
                             <td>{{ reserva.get_estado_display }}</td>
                             <td>{{ reserva.total|floatformat:2 }}</td>

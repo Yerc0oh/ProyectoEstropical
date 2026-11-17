@@ -8,7 +8,7 @@
   <tbody>
   {% for s in saldos %}
   <tr>
-    <td class="fw-bold">{{ s.codigo }}</td><td>{{ s.reserva.paquete.nombre }}</td>
+    <td class="fw-bold">{{ s.codigo }}</td><td>{{ s.reserva.servicio_nombre }}</td>
     <td>{% include "reservations/_estado.html" with estado=s.estado texto=s.reserva.get_estado_display %}{% if s.cuotas_vencidas %} <span class="badge text-bg-danger">{{ s.cuotas_vencidas }} cuota(s) vencida(s)</span>{% endif %}</td>
     <td class="text-end">{{ s.total }}</td><td class="text-end">{{ s.pagado }}</td><td class="text-end">{{ s.reembolsado }}</td>
     <td class="text-end fw-bold">{{ s.saldo_pendiente }}</td>

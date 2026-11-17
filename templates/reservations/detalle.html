@@ -4,11 +4,11 @@
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
   <div>
     <h1 class="h3 mb-1">Reserva {{ reserva.codigo }} {% include "reservations/_estado.html" with estado=reserva.estado texto=reserva.get_estado_display %}</h1>
-    <p class="text-muted mb-0">{{ reserva.paquete.nombre }} · {{ reserva.paquete.destino }} ·
-      {{ reserva.paquete.fecha_salida|date:"d/m/Y" }} al {{ reserva.paquete.fecha_retorno|date:"d/m/Y" }}</p>
+    <p class="text-muted mb-0">{{ reserva.get_tipo_display }}: {{ reserva.servicio_nombre }}{% if reserva.paquete %} · {{ reserva.paquete.destino }}{% endif %} ·
+      {{ reserva.fecha_viaje|date:"d/m/Y" }} al {{ reserva.fecha_regreso|date:"d/m/Y" }}</p>
   </div>
   <div class="d-flex flex-wrap gap-1">
-    <a class="btn btn-outline-primary" href="{% url 'reservations:itinerario' reserva.pk %}">Itinerario</a>
+    {% if reserva.paquete %}<a class="btn btn-outline-primary" href="{% url 'reservations:itinerario' reserva.pk %}">Itinerario</a>{% endif %}
     <a class="btn btn-outline-primary" href="{% url 'payments:estado_cuenta' reserva.pk %}">Estado de cuenta</a>
     {% if reserva.esta_activa and saldo > 0 %}<a class="btn btn-primary" href="{% url 'payments:pagar' reserva.pk %}">Pagar</a>{% endif %}
     {% if reserva.puede_modificarse %}<a class="btn btn-outline-secondary" href="{% url 'reservations:modificar' reserva.pk %}">Modificar</a>{% endif %}
